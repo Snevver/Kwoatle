@@ -1,50 +1,20 @@
-# Welcome to your Expo app 👋
+# Quotely
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Imagine having a personal collection of inspirational or motivational quotes, always within reach. That's exactly what **Quotely** offers!
 
-## Get started
+### What is the app?  
+**Quotely** is an app where users can save, organize, and share their favorite quotes with friends. Instead of storing quotes in separate notes or screenshots, you can organize them with labels like “Motivation,” “Love,” or “Life Lessons.”
 
-1. Install dependencies
+### How does it work?  
+- **Add a quote** – See a nice quote online or hear something inspiring? Add it to **Quotely**, including the author and a label.  
+- **Organize quotes** – Use labels/tags to keep your quotes organized, so you can easily find and access them.  
+- **Sharing & Interaction** – Add friends and view each other's quotes. Rate quotes with a star system (1–5 stars).  
+- **Widget on your phone** – Want a new inspiring quote every day on your home screen? **Quotely** has a widget that shows a random quote from your collection each day.  
+- **Share quotes from friends' books** – Easily copy quotes from your friends' books into your own collection.
 
-   ```bash
-   npm install
-   ```
+### Why is it useful?  
+- No more loose notes or screenshots – everything is organized.  
+- Social and inspiring – share your favorite quotes and discover what motivates your friends.  
+- Daily motivation – the widget delivers a fresh dose of inspiration every day.
 
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+In short: **Quotely** is a digital, social quote collection that keeps you inspired.

@@ -1,39 +1,57 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+import { View, Text } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-
-// Prevent the splash screen from auto-hiding before asset loading is complete.
+// Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+export default function Layout() {
+  // Load the Delius font
+  const [fontsLoaded] = useFonts({
+    Delius: require('./assets/fonts/Delius-Regular.ttf'), // Load local font
   });
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
+  if (!fontsLoaded) {
+    // Show splash screen until fonts are loaded
+    SplashScreen.showAsync();
     return null;
   }
 
+  // Hide splash screen after fonts are loaded
+  SplashScreen.hideAsync();
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen
+        name="index"
+        options={{
+          header: () => (
+            <View
+              style={{
+                height: 70,
+                backgroundColor: '#ffffff',
+                justifyContent: 'center',
+                paddingBottom: 10,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                  fontFamily: 'Delius', // Apply the custom font
+                }}
+              >
+                Quotely
+              </Text>
+            </View>
+          ),
+          headerStyle: {
+            backgroundColor: '#ffffff',
+          },
+        }}
+      />
+    </Stack>
   );
 }
