@@ -9,6 +9,7 @@ export default function Index() {
         alignItems: "center",
         backgroundColor: "#001122",
       }}>
+        <Text>Hoi</Text>
     </View>
   );
 }
