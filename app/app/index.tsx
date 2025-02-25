@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
 
 export default function Index() {
   return (
@@ -7,9 +7,8 @@ export default function Index() {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#001122",
+        backgroundColor: "#07263B",
       }}>
-        <Text>Hoi</Text>
     </View>
   );
 }
