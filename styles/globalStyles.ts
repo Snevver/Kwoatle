@@ -15,7 +15,6 @@ const globalStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  // Add more global styles as needed
 });
 
 export default globalStyles;

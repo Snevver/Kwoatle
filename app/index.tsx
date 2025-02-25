@@ -1,9 +1,20 @@
 import React from 'react';
-import { View, Text, StatusBar, Pressable} from 'react-native';
+import { View, Text, StatusBar, Pressable, Image, Dimensions, StyleSheet} from 'react-native';
 import { useRouter } from 'expo-router';
 import globalStyles from '../styles/globalStyles';
 
 export default function SplashScreen() {
+  const { width, height } = Dimensions.get('window');
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    image: {
+      flex: 1,
+      width: '100%',
+      height: '100%',
+    },
+  });
   const router = useRouter();
   const callback =() => {
     console.log('Start button pressed');
@@ -14,103 +25,14 @@ export default function SplashScreen() {
     <>
       <StatusBar hidden={true} />
       <View style={{ flex: 1, backgroundColor: '#07263B' }}>
-        {/* Background circles */}
-        <View
-          style={{
-            height: 200,
-            width: 200,
-            backgroundColor: '#1E3A4C',
-            borderRadius: 100,
-            position: 'absolute',
-            top: -40,
-            left: -80,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <View
-          style={{
-            height: 200,
-            width: 200,
-            backgroundColor: '#1E3A4C',
-            borderRadius: 100,
-            position: 'absolute',
-            top: 200,
-            left: 250,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <View
-          style={{
-            height: 200,
-            width: 200,
-            backgroundColor: '#4F8D91',
-            borderRadius: 100,
-            position: 'absolute',
-            top: 350,
-            left: -130,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <View
-          style={{
-            height: 75,
-            width: 75,
-            backgroundColor: '#4F8D91',
-            borderRadius: 100,
-            position: 'absolute',
-            top: 280,
-            left: 100,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <View
-          style={{
-            height: 40,
-            width: 40,
-            backgroundColor: '#218690',
-            borderRadius: 100,
-            position: 'absolute',
-            top: 70,
-            left: 200,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
-        <View
-          style={{
-            height: 100,
-            width: 100,
-            backgroundColor: '#1E3A4C',
-            borderRadius: 100,
-            position: 'absolute',
-            top: 650,
-            left: 250,
-            shadowColor: '#fff',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.5,
-            shadowRadius: 3.84,
-            elevation: 5,
-          }}
-        />
+        {/* Background image */}
+        <View style={styles.container}>
+          <Image
+            source={require('../assets/images/background.png')}
+            style={styles.image}
+            resizeMode="cover"
+          />
+      </View>
 
         {/* Start page text */}
         <View
@@ -161,7 +83,8 @@ export default function SplashScreen() {
           }}
           onPress={callback}
         >
-          <Text style={{ fontSize: 40, color: '#fff' }}>Start</Text>
+          {/* Gotta change the font + space has to be fixed*/}
+          <Text style={{ fontSize: 40, color: '#fff'}}>Start </Text>
         </Pressable>
       </View>
     </>
