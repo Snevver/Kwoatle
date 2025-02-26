@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, createRef } from "react";
 import {
     View,
     Text,
@@ -9,11 +9,16 @@ import {
     StyleSheet,
     Modal,
     TextInput,
+    Share,
+    ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import globalStyles from "../styles/globalStyles";
 import ConfirmationDialog from "../components/confirmationDialog";
+import ViewShot from "react-native-view-shot";
+// Import the icon library - you'll need to install this package
+import { Feather } from "@expo/vector-icons";
 
 type Quote = {
     id: number;
@@ -37,6 +42,10 @@ export default function QuotesOverview() {
     const [category, setCategory] = useState<Category | null>(null);
     const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
     const [quoteToDelete, setQuoteToDelete] = useState<number | null>(null);
+    const [isSharing, setIsSharing] = useState<number | null>(null);
+
+    // Ref voor elke quote component
+    const quoteRefs = useRef<{ [key: number]: React.RefObject<ViewShot> }>({});
 
     // Edit quote state
     const [editModalVisible, setEditModalVisible] = useState(false);
@@ -47,6 +56,15 @@ export default function QuotesOverview() {
     useEffect(() => {
         loadCategoryAndQuotes();
     }, [categoryId]);
+
+    useEffect(() => {
+        // Maak refs aan voor elke quote
+        quotes.forEach(quote => {
+            if (!quoteRefs.current[quote.id]) {
+                quoteRefs.current[quote.id] = createRef<ViewShot>();
+            }
+        });
+    }, [quotes]);
 
     const loadCategoryAndQuotes = async () => {
         if (!categoryId) {
@@ -80,6 +98,35 @@ export default function QuotesOverview() {
             }
         } catch (error) {
             console.error("Error loading data:", error);
+        }
+    };
+
+    const shareQuote = async (quote: Quote) => {
+        try {
+            const ref = quoteRefs.current[quote.id];
+            if (!ref?.current) return;
+            
+            // Show loading indicator for this specific quote
+            setIsSharing(quote.id);
+            
+            // Capture the quote view
+            const uri = ref.current && ref.current.capture ? await ref.current.capture() : null;
+            if (!uri) {
+                setIsSharing(null);
+                return;
+            }
+            
+            // Share the image with enhanced message
+            await Share.share({
+                url: uri,
+                message: `"${quote.text}" — ${quote.author}\n\nShared from Kwoatle`,
+                title: "Share Inspiring Quote"
+            });
+            
+            setIsSharing(null);
+        } catch (error) {
+            setIsSharing(null);
+            console.error("Error sharing quote:", error);
         }
     };
 
@@ -215,60 +262,102 @@ export default function QuotesOverview() {
         }
     };
 
-    const renderQuoteItem = (item: Quote) => (
-        <View
-            style={[
-                styles.quoteCard,
-                { backgroundColor: category?.color || "#76DAE5" },
-            ]}
-        >
-            <Text style={[globalStyles.text, styles.quoteText]}>
-                "{item.text}"
-            </Text>
+    const renderQuoteItem = (item: Quote) => {
+        // Make sure there is a ref for the quote
+        if (!quoteRefs.current[item.id]) {
+            quoteRefs.current[item.id] = createRef<ViewShot>();
+        }
 
-            <View style={styles.quoteDetails}>
-                <Text
-                    style={[
-                        globalStyles.text,
-                        { fontSize: 18, paddingBottom: 5 },
-                    ]}
+        return (
+            <View
+                style={[
+                    styles.quoteCard,
+                    { backgroundColor: category?.color || "#76DAE5" },
+                ]}
+            >
+                <ViewShot
+                    ref={quoteRefs.current[item.id]}
+                    options={{ format: "png", quality: 0.9 }}
+                    style={styles.quoteContent}
                 >
-                    — {item.author || "Unknown"}
-                </Text>
-
-                <Text style={[globalStyles.text, styles.quoteDate]}>
-                    Added:{" "}
-                    {item.dateAdded
-                        ? formatDate(item.dateAdded)
-                        : "Unknown date"}
-                </Text>
-            </View>
-
-            <View style={styles.buttonContainer}>
-                {/* Edit button */}
-                <Pressable
-                    onPress={() => openEditModal(item)}
-                    style={[styles.actionButton, styles.editButton]}
-                    testID={`edit-quote-${item.id}`}
-                >
-                    <Text style={[globalStyles.text, styles.actionButtonText]}>
-                        Edit
+                    <Text style={[globalStyles.text, styles.quoteText]}>
+                        "{item.text}"
                     </Text>
-                </Pressable>
 
-                {/* Delete button */}
-                <Pressable
-                    onPress={() => confirmDeleteQuote(item.id)}
-                    style={[styles.actionButton, styles.deleteButton]}
-                    testID={`delete-quote-${item.id}`}
-                >
-                    <Text style={[globalStyles.text, styles.actionButtonText]}>
-                        Delete
-                    </Text>
-                </Pressable>
+                    <View style={styles.quoteDetails}>
+                        <Text
+                            style={[
+                                globalStyles.text,
+                                { fontSize: 18, paddingBottom: 5 },
+                            ]}
+                        >
+                            — {item.author || "Unknown"}
+                        </Text>
+
+                        <Text style={[globalStyles.text, styles.quoteDate]}>
+                            Added:{" "}
+                            {item.dateAdded
+                                ? formatDate(item.dateAdded)
+                                : "Unknown date"}
+                        </Text>
+                    </View>
+                    
+                    <View style={styles.watermark}>
+                        <Text style={styles.watermarkText}>QuotesApp</Text>
+                    </View>
+                </ViewShot>
+
+                <View style={styles.buttonContainer}>
+                    {/* Share button with enhanced styling */}
+                    <Pressable
+                        onPress={() => shareQuote(item)}
+                        style={[
+                            styles.actionButton, 
+                            styles.shareButton,
+                            isSharing === item.id && styles.sharingInProgress
+                        ]}
+                        disabled={isSharing === item.id}
+                        testID={`share-quote-${item.id}`}
+                    >
+                        {isSharing === item.id ? (
+                            <ActivityIndicator size="small" color="#fff" />
+                        ) : (
+                            <>
+                                <Feather name="share-2" size={14} color="#fff" style={{marginRight: 5}} />
+                                <Text style={[globalStyles.text, styles.actionButtonText]}>
+                                    Share
+                                </Text>
+                            </>
+                        )}
+                    </Pressable>
+
+                    {/* Edit button */}
+                    <Pressable
+                        onPress={() => openEditModal(item)}
+                        style={[styles.actionButton, styles.editButton]}
+                        testID={`edit-quote-${item.id}`}
+                    >
+                        <Feather name="edit-2" size={14} color="#fff" style={{marginRight: 5}} />
+                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                            Edit
+                        </Text>
+                    </Pressable>
+
+                    {/* Delete button */}
+                    <Pressable
+                        onPress={() => confirmDeleteQuote(item.id)}
+                        style={[styles.actionButton, styles.deleteButton]}
+                        testID={`delete-quote-${item.id}`}
+                    >
+                        <Feather name="trash-2" size={14} color="#fff" style={{marginRight: 5}} />
+                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                            Delete
+                        </Text>
+                    </Pressable>
+                </View>
             </View>
-        </View>
-    );
+        );
+    };
 
     const goBack = () => {
         router.push("/dashboard");
@@ -492,6 +581,12 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
+    quoteContent: {
+        padding: 5,
+        borderRadius: 8,
+        backgroundColor: "rgba(255, 255, 255, 0.05)",
+        position: "relative",
+    },
     quoteText: {
         color: "#fff",
         fontSize: 18,
@@ -517,10 +612,16 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     actionButton: {
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        borderRadius: 5,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
         marginRight: 10,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    shareButton: {
+        backgroundColor: "#4CAF50",
     },
     editButton: {
         backgroundColor: "#2186D0",
@@ -531,6 +632,21 @@ const styles = StyleSheet.create({
     actionButtonText: {
         color: "#fff",
         fontSize: 14,
+        fontWeight: "600",
+    },
+    sharingInProgress: {
+        opacity: 0.7,
+    },
+    watermark: {
+        position: "absolute",
+        bottom: 5,
+        right: 5,
+        opacity: 0.6
+    },
+    watermarkText: {
+        color: "#fff",
+        fontSize: 10,
+        fontStyle: "italic"
     },
     emptyState: {
         alignItems: "center",
