@@ -9,12 +9,6 @@ const globalStyles = StyleSheet.create({
     fontFamily: 'Delius',
     color: '#FFFFFF',
   },
-  heading: {
-    fontFamily: 'Delius',
-    color: '#FFFFFF',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
 });
 
 export default globalStyles;
