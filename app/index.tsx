@@ -1,22 +1,78 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     View,
     Text,
     StatusBar,
     Pressable,
     Image,
-    Dimensions,
     StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withDelay,
+    Easing,
+} from "react-native-reanimated";
 import globalStyles from "../styles/globalStyles";
 
 export default function SplashScreen() {
     const router = useRouter();
 
-    // Send the user to the dashboard
+    // Shared values for animations
+    const titleOpacity = useSharedValue(0);
+    const subtitleOpacity = useSharedValue(0);
+    const buttonOpacity = useSharedValue(0);
+    const titleTranslateY = useSharedValue(50);
+    const subtitleTranslateY = useSharedValue(50);
+    const buttonTranslateY = useSharedValue(50);
+
+    // Start animations when the component mounts
+    useEffect(() => {
+        titleOpacity.value = withTiming(1, {
+            duration: 800,
+            easing: Easing.out(Easing.exp),
+        });
+        titleTranslateY.value = withTiming(0, {
+            duration: 800,
+            easing: Easing.out(Easing.exp),
+        });
+
+        subtitleOpacity.value = withDelay(
+            300,
+            withTiming(1, { duration: 800 })
+        );
+        subtitleTranslateY.value = withDelay(
+            300,
+            withTiming(0, { duration: 800 })
+        );
+
+        buttonOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
+        buttonTranslateY.value = withDelay(
+            600,
+            withTiming(0, { duration: 800 })
+        );
+    }, []);
+
+    // Animated styles
+    const animatedTitleStyle = useAnimatedStyle(() => ({
+        opacity: titleOpacity.value,
+        transform: [{ translateY: titleTranslateY.value }],
+    }));
+
+    const animatedSubtitleStyle = useAnimatedStyle(() => ({
+        opacity: subtitleOpacity.value,
+        transform: [{ translateY: subtitleTranslateY.value }],
+    }));
+
+    const animatedButtonStyle = useAnimatedStyle(() => ({
+        opacity: buttonOpacity.value,
+        transform: [{ translateY: buttonTranslateY.value }],
+    }));
+
+    // Navigate to the dashboard
     const goToDashboard = () => {
-        console.log("Start button pressed");
         router.push("/dashboard");
     };
 
@@ -33,22 +89,33 @@ export default function SplashScreen() {
                     resizeMode="cover"
                 />
 
-                {/* Titel and quote */}
-                <View style={styles.textContainer}>
+                {/* Title and Quote */}
+                <Animated.View
+                    style={[styles.textContainer, animatedTitleStyle]}
+                >
                     <Text style={[globalStyles.text, styles.title]}>
                         Kwoatle
                     </Text>
+                </Animated.View>
+
+                <Animated.View
+                    style={[styles.textContainer, animatedSubtitleStyle]}
+                >
                     <Text style={[globalStyles.text, styles.subtitle]}>
                         "Your daily dose of inspiration„
                     </Text>
-                </View>
+                </Animated.View>
 
-                {/* Start button */}
-                <Pressable style={styles.startButton} onPress={goToDashboard}>
-                    <Text style={[globalStyles.text, styles.buttonText]}>
-                        Start
-                    </Text>
-                </Pressable>
+                {/* Start Button */}
+                <Animated.View
+                    style={[styles.startButton, animatedButtonStyle]}
+                >
+                    <Pressable onPress={goToDashboard}>
+                        <Text style={[globalStyles.text, styles.buttonText]}>
+                            Start
+                        </Text>
+                    </Pressable>
+                </Animated.View>
             </View>
         </>
     );
@@ -74,7 +141,6 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 10,
-        marginBottom: 300,
     },
     title: {
         fontSize: 65,
@@ -92,8 +158,6 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         justifyContent: "center",
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#fff",
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
