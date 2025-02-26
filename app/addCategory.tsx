@@ -39,9 +39,9 @@ export default function AddCategory() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>🡰</Text>
+          <Text style={[styles.backButtonText, { fontSize: 35 }]}>←</Text>
         </Pressable>
-        <Text style={[globalStyles.text, styles.headerTitle]}>Add New Category</Text>
+        <Text style={[globalStyles.text,styles.label, { fontSize: 30 }]}>Add New Category</Text>
       </View>
 
       <View style={styles.form}>
@@ -73,7 +73,7 @@ export default function AddCategory() {
           style={[styles.saveButton, { backgroundColor: selectedColor }]} 
           onPress={saveCategory}
         >
-          <Text style={[globalStyles.text, styles.saveButtonText]}>Save Category</Text>
+          <Text style={[globalStyles.text, styles.saveButtonText, { fontSize: 30 }]}>Save Category</Text>
         </Pressable>
       </View>
     </View>
@@ -137,14 +137,17 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   saveButton: {
-    marginTop: 40,
+    marginTop: 50,
     padding: 15,
-    borderRadius: 8,
+    borderRadius: 15,
     alignItems: 'center',
+    justifyContent: 'center',
+    height: 70, // Set a fixed height
+    marginHorizontal: 20, // Add some horizontal margin
   },
   saveButtonText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 24,
+    textAlign: 'center',
   },
 });

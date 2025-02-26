@@ -40,7 +40,7 @@ export default function ConfirmationDialog({
           style={styles.modalView}
           onPress={(e) => e.stopPropagation()}
         >
-          <Text style={[globalStyles.text, styles.modalTitle]}>{title}</Text>
+          <Text style={[globalStyles.text, styles.titleText]}>{title}</Text>
           <Text style={[globalStyles.text, styles.modalText]}>{message}</Text>
           
           <View style={styles.buttonContainer}>
@@ -88,11 +88,9 @@ const styles = StyleSheet.create({
     elevation: 5,
     width: '80%',
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#fff',
+  titleText: {
+    fontSize: 30,
+    marginBottom: 10,
     textAlign: 'center',
   },
   modalText: {
@@ -112,6 +110,8 @@ const styles = StyleSheet.create({
     elevation: 2,
     flex: 1,
     marginHorizontal: 5,
+    alignItems: 'center', // Centers the text horizontally
+    justifyContent: 'center', // Centers the text vertically
   },
   cancelButton: {
     backgroundColor: '#5A5A5A',
@@ -120,9 +120,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#AA5555',
   },
   buttonText: {
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 20,
     textAlign: 'center',
-    fontSize: 16,
   },
 });

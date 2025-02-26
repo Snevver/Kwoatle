@@ -98,9 +98,9 @@ export default function AddQuote() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={[globalStyles.text, styles.backButtonText]}>🡰</Text>
+          <Text style={[styles.backButtonText, { fontSize: 35, marginBottom: 12 }]}>←</Text>
         </Pressable>
-        <Text style={[globalStyles.text, styles.headerTitle]}>
+        <Text style={[globalStyles.text, { fontSize: 30 }]}>
           Add quote to {category?.title || 'Category'}
         </Text>
       </View>
@@ -134,7 +134,7 @@ export default function AddQuote() {
           ]} 
           onPress={saveQuote}
         >
-          <Text style={[globalStyles.text, styles.saveButtonText]}>Save quote</Text>
+          <Text style={[globalStyles.text, { fontSize: 25 }]}>Save quote</Text>
         </Pressable>
       </View>
     </View>

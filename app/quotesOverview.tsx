@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StatusBar, Pressable, Image, FlatList, StyleSheet, Modal, TextInput, ScrollView } from 'react-native';
+import { View, Text, StatusBar, Pressable, Image, ScrollView, StyleSheet, Modal, TextInput } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import globalStyles from '../styles/globalStyles';
@@ -190,12 +190,12 @@ export default function QuotesOverview() {
     }
   };
 
-  const renderQuoteItem = ({ item }: { item: Quote }) => (
+  const renderQuoteItem = (item: Quote) => (
     <View style={[styles.quoteCard, { backgroundColor: category?.color || '#76DAE5' }]}>
       <Text style={[globalStyles.text, styles.quoteText]}>"{item.text}"</Text>
       
       <View style={styles.quoteDetails}>
-        <Text style={[globalStyles.text, styles.quoteAuthor]}>
+        <Text style={[globalStyles.text, { fontSize: 18, paddingBottom: 5 }]}>
           — {item.author || 'Unknown'}
         </Text>
         
@@ -254,32 +254,26 @@ export default function QuotesOverview() {
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={goBack} style={styles.backButton}>
-            <Text style={[globalStyles.text, styles.backButtonText]}>🡰</Text>
+            <Text style={[styles.backButtonText, { fontSize: 35, marginBottom: 12 }]}>←</Text>
           </Pressable>
-          <Text style={[globalStyles.text, styles.headerTitle]}>{category?.title || 'Quotes'}</Text>
+          <Text style={[globalStyles.text, { fontSize: 40 }]}>{category?.title || 'Quotes'}</Text>
         </View>
 
-        {/* Content area with proper padding for the add button */}
-        <View style={styles.contentContainer}>
-          {quotes.length === 0 ? (
-            <EmptyListComponent />
-          ) : (
-            <FlatList
-              data={quotes}
-              renderItem={renderQuoteItem}
-              keyExtractor={(item) => item.id.toString()}
-              contentContainerStyle={styles.listContainer}
-              showsVerticalScrollIndicator={true}
-            />
-          )}
+        {/* Content area */}
+        <View style={styles.scrollableContainer}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+            {quotes.length === 0 ? (
+              <EmptyListComponent />
+            ) : (
+              quotes.map((quote) => renderQuoteItem(quote))
+            )}
+          </ScrollView>
         </View>
 
         {/* Add button */}
-        <View style={styles.addButtonContainer}>
-          <Pressable style={styles.addButton} onPress={goToAddQuote}>
-            <Text style={[globalStyles.text, { fontSize: 50, marginBottom: 11 }]}>+</Text>
-          </Pressable>
-        </View>
+        <Pressable style={styles.addButton} onPress={goToAddQuote}>
+          <Text style={[globalStyles.text, { fontSize: 50 }]}>+</Text>
+        </Pressable>
 
         {/* Confirmation Dialog */}
         <ConfirmationDialog
@@ -302,9 +296,9 @@ export default function QuotesOverview() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={[globalStyles.text, styles.modalTitle]}>Edit Quote</Text>
+              <Text style={[globalStyles.text, { fontSize: 35, marginBottom: 15 }]}>Edit Quote</Text>
               
-              <Text style={[globalStyles.text, styles.modalLabel]}>Quote Text</Text>
+              <Text style={[globalStyles.text, { fontSize: 20 }]}>Quote Text</Text>
               <TextInput
                 style={[globalStyles.text, styles.modalInputMultiline, { color: '#000' }]}
                 value={editedQuoteText}
@@ -316,7 +310,7 @@ export default function QuotesOverview() {
                 textAlignVertical="top"
               />
               
-              <Text style={[globalStyles.text, styles.modalLabel]}>Quote Author</Text>
+              <Text style={[globalStyles.text, { fontSize: 20 }]}>Quote Author</Text>
               <TextInput
                 style={[globalStyles.text, styles.modalInput, { color: '#000' }]}
                 value={editedQuoteAuthor}
@@ -330,13 +324,13 @@ export default function QuotesOverview() {
                   style={[styles.modalButton, styles.modalCancelButton]} 
                   onPress={cancelEdit}
                 >
-                  <Text style={[globalStyles.text, styles.modalButtonText]}>Cancel</Text>
+                  <Text style={[globalStyles.text, { fontSize: 20 }]}>Cancel</Text>
                 </Pressable>
                 <Pressable 
                   style={[styles.modalButton, styles.modalSaveButton, { backgroundColor: category?.color || '#218690' }]} 
                   onPress={saveEditedQuote}
                 >
-                  <Text style={[globalStyles.text, styles.modalButtonText]}>Save</Text>
+                  <Text style={[globalStyles.text, { fontSize: 20 }]}>Save</Text>
                 </Pressable>
               </View>
             </View>
@@ -377,18 +371,13 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 24,
   },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  contentContainer: {
-    flex: 1,
-    paddingBottom: 110,
-    borderRadius: 35,
-  },
-  listContainer: {
-    padding: 20,
+  scrollableContainer: {
+    position: 'absolute',
+    top: 100,
+    left: 0,
+    right: 0,
+    bottom: 140,
+    paddingHorizontal: 20,
   },
   quoteCard: {
     padding: 20,
@@ -451,23 +440,18 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
   },
-  addButtonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
   addButton: {
+    position: 'absolute',
+    bottom: 50,
+    left: 20,
+    right: 20,
     height: 60,
     backgroundColor: '#218690',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
-    borderColor: '#fff',
     borderWidth: 1,
-    width: '100%',
+    borderColor: '#fff',
   },
   modalOverlay: {
     flex: 1,

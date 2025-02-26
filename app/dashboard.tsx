@@ -159,7 +159,7 @@ export default function Dashboard() {
 
         {/* Header */}
         <View style={styles.headerContainer}>
-          <Text style={[globalStyles.text, { fontSize: 40, marginTop: -12 }]}>Kwoatle</Text>
+          <Text style={[globalStyles.text, { fontSize: 40, marginTop: -25 }]}>Kwoatle</Text>
         </View>
 
         {/* Scrollable list of categories */}
@@ -172,10 +172,12 @@ export default function Dashboard() {
                 onPress={() => goToQuotesOverview(category.id)}
               >
                 <View style={[styles.categoryBox, { backgroundColor: category.color }]}>
-                  <Text style={[globalStyles.text, styles.categoryText]}>{category.title}</Text>
-                  <Text style={[globalStyles.text, styles.quoteCountText]}>
-                    {category.amountOfQuotes} {category.amountOfQuotes === 1 ? 'quote' : 'quotes'}
-                  </Text>
+                  <View style={styles.categoryContent}>
+                    <Text style={[globalStyles.text, { fontSize: 30 }]}>{category.title}</Text>
+                    <Text style={[globalStyles.text, styles.quoteCountText]}>
+                      {category.amountOfQuotes} {category.amountOfQuotes === 1 ? 'quote' : 'quotes'}
+                    </Text>
+                  </View>
                   
                   <View style={styles.buttonContainer}>
                     {/* Edit button */}
@@ -186,7 +188,7 @@ export default function Dashboard() {
                       }} 
                       style={[styles.actionButton, styles.editButton]}
                     >
-                      <Text style={[globalStyles.text, styles.actionButtonText]}>Edit</Text>
+                      <Text style={[globalStyles.text, { fontSize: 20 }]}>Edit</Text>
                     </Pressable>
                     
                     {/* Delete button */}
@@ -197,7 +199,7 @@ export default function Dashboard() {
                       }} 
                       style={[styles.actionButton, styles.deleteButton]}
                     >
-                      <Text style={[globalStyles.text, styles.actionButtonText]}>Delete</Text>
+                      <Text style={[globalStyles.text, { fontSize: 20 }]}>Delete</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -237,7 +239,7 @@ export default function Dashboard() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={[globalStyles.text, styles.modalTitle]}>Edit Category</Text>
+              <Text style={[globalStyles.text, { fontSize: 30, marginBottom: 20}]}>Edit Category</Text>
               
               <Text style={[globalStyles.text, styles.modalLabel]}>Category Name</Text>
               <TextInput
@@ -248,7 +250,7 @@ export default function Dashboard() {
                 placeholderTextColor="#999"
               />
 
-              <Text style={[globalStyles.text, styles.label]}>Category Color</Text>
+              <Text style={[globalStyles.text, styles.label, { marginBottom: 0 }]}>Category Color</Text>
                 <View style={styles.colorPicker}>
                   {colorOptions.map((color) => (
                     <Pressable
@@ -268,13 +270,13 @@ export default function Dashboard() {
                   style={[styles.modalButton, styles.modalCancelButton]} 
                   onPress={cancelEdit}
                 >
-                  <Text style={[globalStyles.text, styles.modalButtonText]}>Cancel</Text>
+                  <Text style={[globalStyles.text, { fontSize: 20 }]}>Cancel</Text>
                 </Pressable>
                 <Pressable 
                   style={[styles.modalButton, styles.modalSaveButton, { backgroundColor: selectedColor }]} 
                   onPress={saveEditedCategory}
                 >
-                  <Text style={[globalStyles.text, styles.modalButtonText]}>Save</Text>
+                  <Text style={[globalStyles.text, { fontSize: 20 }]}>Save</Text>
                 </Pressable>
               </View>
             </View>
@@ -301,7 +303,7 @@ const styles = StyleSheet.create({
   },
   headerContainer: { 
     position: 'absolute', 
-    top: 40, 
+    top: 65, 
     left: 0, 
     right: 0, 
     alignItems: 'center' 
@@ -311,11 +313,11 @@ const styles = StyleSheet.create({
     top: 100, 
     left: 0, 
     right: 0, 
-    bottom: 100, 
+    bottom: 140,
     paddingHorizontal: 20 
   },
   categoryBox: {
-    height: 140,
+    minHeight: 140,
     borderRadius: 15,
     marginBottom: 20,
     padding: 15,
@@ -365,7 +367,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 50,
     left: 20,
     right: 20,
     height: 60,
@@ -454,5 +456,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
     marginTop: 20,
+  },
+  categoryContent: {
+    flex: 1,
+    marginBottom: 10,
   },
 });
