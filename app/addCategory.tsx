@@ -5,7 +5,8 @@ import { useRouter } from 'expo-router';
 import globalStyles from '../styles/globalStyles';
 
 // Array of color options
-const colorOptions = ['#76DAE5', '#218690', '#4E9B8F', '#70C1B3', '#247BA0', '#50514F'];
+// Maybe we can add a custom color picker ??
+const colorOptions = ['#218690', '#76DAE5', '#4E9B8F', '#70C1B3', '#247BA0', '#50514F'];
 
 export default function AddCategory() {
   const [category, setCategory] = useState('');
@@ -38,7 +39,7 @@ export default function AddCategory() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <Text style={styles.backButtonText}>🡰</Text>
         </Pressable>
         <Text style={[globalStyles.text, styles.headerTitle]}>Add New Category</Text>
       </View>

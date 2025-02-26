@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StatusBar, Pressable, Image, FlatList, StyleSheet, Modal, TextInput } from 'react-native';
+import { View, Text, StatusBar, Pressable, Image, FlatList, StyleSheet, Modal, TextInput, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import globalStyles from '../styles/globalStyles';
@@ -176,7 +176,7 @@ export default function QuotesOverview() {
     }
   };
 
-  // Format the date to show as "Jan 1, 2025"
+  // Add date
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -230,6 +230,14 @@ export default function QuotesOverview() {
     router.push('/dashboard');
   };
 
+  const EmptyListComponent = () => (
+    <View style={styles.emptyState}>
+      <Text style={[globalStyles.text, styles.emptyStateText]}>
+        No quotes yet. Add your first quote!
+      </Text>
+    </View>
+  );
+
   return (
     <>
       <StatusBar hidden={true} />
@@ -246,30 +254,32 @@ export default function QuotesOverview() {
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={goBack} style={styles.backButton}>
-            <Text style={[globalStyles.text, styles.backButtonText]}>←</Text>
+            <Text style={[globalStyles.text, styles.backButtonText]}>🡰</Text>
           </Pressable>
           <Text style={[globalStyles.text, styles.headerTitle]}>{category?.title || 'Quotes'}</Text>
         </View>
 
-        {/* Quotes list */}
-        <FlatList
-          data={quotes}
-          renderItem={renderQuoteItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.listContainer}
-          ListEmptyComponent={
-            <View style={styles.emptyState}>
-              <Text style={[globalStyles.text, styles.emptyStateText]}>
-                No quotes yet. Add your first quote!
-              </Text>
-            </View>
-          }
-        />
+        {/* Content area with proper padding for the add button */}
+        <View style={styles.contentContainer}>
+          {quotes.length === 0 ? (
+            <EmptyListComponent />
+          ) : (
+            <FlatList
+              data={quotes}
+              renderItem={renderQuoteItem}
+              keyExtractor={(item) => item.id.toString()}
+              contentContainerStyle={styles.listContainer}
+              showsVerticalScrollIndicator={true}
+            />
+          )}
+        </View>
 
-        {/* Add quote button */}
-        <Pressable style={styles.addButton} onPress={goToAddQuote}>
-          <Text style={[globalStyles.text, { fontSize: 50, marginBottom: 11 }]}>+</Text>
-        </Pressable>
+        {/* Add button */}
+        <View style={styles.addButtonContainer}>
+          <Pressable style={styles.addButton} onPress={goToAddQuote}>
+            <Text style={[globalStyles.text, { fontSize: 50, marginBottom: 11 }]}>+</Text>
+          </Pressable>
+        </View>
 
         {/* Confirmation Dialog */}
         <ConfirmationDialog
@@ -372,9 +382,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
+  contentContainer: {
+    flex: 1,
+    paddingBottom: 110,
+    borderRadius: 35,
+  },
   listContainer: {
     padding: 20,
-    paddingBottom: 100,
   },
   quoteCard: {
     padding: 20,
@@ -437,16 +451,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 18,
   },
-  addButton: {
+  addButtonContainer: {
     position: 'absolute',
     bottom: 20,
-    left: 20,
-    right: 20,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  addButton: {
     height: 60,
     backgroundColor: '#218690',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+    borderColor: '#fff',
+    borderWidth: 1,
+    width: '100%',
   },
   modalOverlay: {
     flex: 1,

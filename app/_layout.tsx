@@ -3,7 +3,6 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { SplashScreen } from 'expo-router';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete
 SplashScreen.preventAutoHideAsync();
 
 export default function Layout() {
@@ -13,12 +12,10 @@ export default function Layout() {
 
   useEffect(() => {
     if (fontsLoaded) {
-      // Hide the splash screen after the fonts have loaded and the UI is ready
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
-  // If the fonts are not loaded yet, render nothing
   if (!fontsLoaded) {
     return null;
   }

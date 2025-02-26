@@ -355,6 +355,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   modalOverlay: {
     flex: 1,

@@ -98,7 +98,7 @@ export default function AddQuote() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backButton}>
-          <Text style={[globalStyles.text, styles.backButtonText]}>←</Text>
+          <Text style={[globalStyles.text, styles.backButtonText]}>🡰</Text>
         </Pressable>
         <Text style={[globalStyles.text, styles.headerTitle]}>
           Add quote to {category?.title || 'Category'}
@@ -194,6 +194,8 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
+    borderColor: '#fff',
+    borderWidth: 1,
   },
   saveButtonText: {
     color: '#fff',

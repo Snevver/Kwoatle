@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    marginBottom: 300,
   },
   title: {
     fontSize: 65,
@@ -79,12 +80,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 3,
+    borderWidth: 1,
     borderColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
     shadowRadius: 10,
+    marginBottom: 35,
   },
   buttonText: {
     fontSize: 40,

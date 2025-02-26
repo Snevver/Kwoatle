@@ -34,11 +34,11 @@ export default function ConfirmationDialog({
     >
       <Pressable 
         style={styles.centeredView}
-        onPress={onCancel} // Cancel when clicking outside the modal
+        onPress={onCancel}
       >
         <Pressable 
           style={styles.modalView}
-          onPress={(e) => e.stopPropagation()} // Prevent clicks inside the modal from bubbling
+          onPress={(e) => e.stopPropagation()}
         >
           <Text style={[globalStyles.text, styles.modalTitle]}>{title}</Text>
           <Text style={[globalStyles.text, styles.modalText]}>{message}</Text>
@@ -64,6 +64,7 @@ export default function ConfirmationDialog({
   );
 }
 
+// Styling
 const styles = StyleSheet.create({
   centeredView: {
     flex: 1,
