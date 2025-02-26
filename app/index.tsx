@@ -20,7 +20,7 @@ import globalStyles from "../styles/globalStyles";
 export default function SplashScreen() {
     const router = useRouter();
 
-    // Shared values for animations
+    // Animation values
     const titleOpacity = useSharedValue(0);
     const subtitleOpacity = useSharedValue(0);
     const buttonOpacity = useSharedValue(0);
@@ -56,20 +56,30 @@ export default function SplashScreen() {
     }, []);
 
     // Animated styles
-    const animatedTitleStyle = useAnimatedStyle(() => ({
-        opacity: titleOpacity.value,
-        transform: [{ translateY: titleTranslateY.value }],
-    }));
+    const getAnimatedTitleStyle = () => {
+        return {
+            opacity: titleOpacity.value,
+            transform: [{ translateY: titleTranslateY.value }],
+        };
+    };
 
-    const animatedSubtitleStyle = useAnimatedStyle(() => ({
-        opacity: subtitleOpacity.value,
-        transform: [{ translateY: subtitleTranslateY.value }],
-    }));
+    const getAnimatedSubtitleStyle = () => {
+        return {
+            opacity: subtitleOpacity.value,
+            transform: [{ translateY: subtitleTranslateY.value }],
+        };
+    };
 
-    const animatedButtonStyle = useAnimatedStyle(() => ({
-        opacity: buttonOpacity.value,
-        transform: [{ translateY: buttonTranslateY.value }],
-    }));
+    const getAnimatedButtonStyle = () => {
+        return {
+            opacity: buttonOpacity.value,
+            transform: [{ translateY: buttonTranslateY.value }],
+        };
+    };
+
+    const animatedTitleStyle = useAnimatedStyle(getAnimatedTitleStyle);
+    const animatedSubtitleStyle = useAnimatedStyle(getAnimatedSubtitleStyle);
+    const animatedButtonStyle = useAnimatedStyle(getAnimatedButtonStyle);
 
     // Navigate to the dashboard
     const goToDashboard = () => {
@@ -141,6 +151,7 @@ const styles = StyleSheet.create({
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 10,
+        bottom: 100,
     },
     title: {
         fontSize: 65,
