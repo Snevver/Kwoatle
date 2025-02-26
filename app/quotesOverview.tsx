@@ -301,7 +301,7 @@ export default function QuotesOverview() {
                     </View>
                     
                     <View style={styles.watermark}>
-                        <Text style={styles.watermarkText}>QuotesApp</Text>
+                        <Text style={styles.watermarkText}>Kwoatle</Text>
                     </View>
                 </ViewShot>
 
