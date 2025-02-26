@@ -14,6 +14,8 @@ type Category = {
   amountOfQuotes: number;
 };
 
+const colorOptions = ['#218690', '#76DAE5', '#4E9B8F', '#70C1B3', '#247BA0', '#50514F'];
+
 export default function Dashboard() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
@@ -21,6 +23,7 @@ export default function Dashboard() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
   const [editedCategoryName, setEditedCategoryName] = useState('');
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const router = useRouter();  
 
   const loadCategories = async () => {
@@ -37,12 +40,10 @@ export default function Dashboard() {
     }
   };
 
-  // Load categories on initial mount
   useEffect(() => {
     loadCategories();
   }, []);
   
-  // Refresh categories whenever screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadCategories();
@@ -74,6 +75,7 @@ export default function Dashboard() {
   const openEditModal = (category: Category) => {
     setCategoryToEdit(category);
     setEditedCategoryName(category.title);
+    setSelectedColor(category.color);
     setEditModalVisible(true);
   };
 
@@ -94,7 +96,8 @@ export default function Dashboard() {
           if (cat.id === categoryToEdit.id) {
             return {
               ...cat,
-              title: editedCategoryName.trim()
+              title: editedCategoryName.trim(),
+              color: selectedColor
             };
           }
           return cat;
@@ -244,6 +247,21 @@ export default function Dashboard() {
                 placeholder="Enter category name"
                 placeholderTextColor="#999"
               />
+
+              <Text style={[globalStyles.text, styles.label]}>Category Color</Text>
+                <View style={styles.colorPicker}>
+                  {colorOptions.map((color) => (
+                    <Pressable
+                      key={color}
+                      style={[
+                        styles.colorOption,
+                        { backgroundColor: color },
+                        selectedColor === color && styles.selectedColorOption,
+                      ]}
+                      onPress={() => setSelectedColor(color)}
+                    />
+                  ))}
+                </View>
               
               <View style={styles.modalButtonsContainer}>
                 <Pressable 
@@ -253,7 +271,7 @@ export default function Dashboard() {
                   <Text style={[globalStyles.text, styles.modalButtonText]}>Cancel</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.modalButton, styles.modalSaveButton, { backgroundColor: categoryToEdit?.color || '#218690' }]} 
+                  style={[styles.modalButton, styles.modalSaveButton, { backgroundColor: selectedColor }]} 
                   onPress={saveEditedCategory}
                 >
                   <Text style={[globalStyles.text, styles.modalButtonText]}>Save</Text>
@@ -415,5 +433,26 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  colorPicker: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 10,
+  },
+  colorOption: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    margin: 5,
+  },
+  selectedColorOption: {
+    borderWidth: 3,
+    borderColor: '#fff',
+  },
+  label: {
+    color: '#fff',
+    fontSize: 16,
+    marginBottom: 10,
+    marginTop: 20,
   },
 });
