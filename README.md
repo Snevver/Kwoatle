@@ -25,6 +25,8 @@ If you want to run this development version of Kwoatle, whether for developing o
 4. **Start Expo** - run `npx expo start --tunnel -c` to start expo.
 5. **Install Expo Go (optional)** - To review your changes in real time on your phone, install the Expo Go mobile app and scan the QR code that appeared in your CLI in the previous step.
 
+If you run into issues, make sure both your phone and your computer are connected to the same Wifi network, and try turning off your anti-virus.
+
 ### Authors
 
 Sven Hoeksema - Full-stack developer

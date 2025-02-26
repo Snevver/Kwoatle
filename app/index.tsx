@@ -27,6 +27,7 @@ export default function SplashScreen() {
     const titleTranslateY = useSharedValue(50);
     const subtitleTranslateY = useSharedValue(50);
     const buttonTranslateY = useSharedValue(50);
+    const buttonScale = useSharedValue(1);
 
     // Start animations when the component mounts
     useEffect(() => {
@@ -48,6 +49,12 @@ export default function SplashScreen() {
             withTiming(0, { duration: 800 })
         );
 
+        buttonOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
+        buttonTranslateY.value = withDelay(
+            600,
+            withTiming(0, { duration: 800 })
+        );
+        
         buttonOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
         buttonTranslateY.value = withDelay(
             600,
