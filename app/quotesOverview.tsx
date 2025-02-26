@@ -17,7 +17,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import globalStyles from "../styles/globalStyles";
 import ConfirmationDialog from "../components/confirmationDialog";
 import ViewShot from "react-native-view-shot";
-// Import the icon library - you'll need to install this package
 import { Feather } from "@expo/vector-icons";
 
 type Quote = {
@@ -44,7 +43,7 @@ export default function QuotesOverview() {
     const [quoteToDelete, setQuoteToDelete] = useState<number | null>(null);
     const [isSharing, setIsSharing] = useState<number | null>(null);
 
-    // Ref voor elke quote component
+    // Ref for each quote
     const quoteRefs = useRef<{ [key: number]: React.RefObject<ViewShot> }>({});
 
     // Edit quote state
@@ -263,7 +262,6 @@ export default function QuotesOverview() {
     };
 
     const renderQuoteItem = (item: Quote) => {
-        // Make sure there is a ref for the quote
         if (!quoteRefs.current[item.id]) {
             quoteRefs.current[item.id] = createRef<ViewShot>();
         }
