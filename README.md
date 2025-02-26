@@ -1,4 +1,4 @@
-# Quotely
+# Kwoatle
 
 Imagine having a personal collection of inspirational or motivational quotes, all the time within reach. That's exactly what **Kwoatle** does!
 
