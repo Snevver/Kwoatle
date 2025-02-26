@@ -321,7 +321,11 @@ export default function QuotesOverview() {
                         {quotes.length === 0 ? (
                             <EmptyListComponent />
                         ) : (
-                            quotes.map((quote) => renderQuoteItem(quote))
+                            quotes.map((quote) => (
+                                <React.Fragment key={quote.id}>
+                                    {renderQuoteItem(quote)}
+                                </React.Fragment>
+                            ))
                         )}
                     </ScrollView>
                 </View>
