@@ -34,14 +34,10 @@ type Category = {
     order?: number;
 };
 
-const colorOptions = [
-    "#218690",
-    "#76DAE5",
-    "#4E9B8F",
-    "#70C1B3",
-    "#247BA0",
-    "#50514F",
-];
+// Array of color options
+const colorOptions: string[] = ['#218690', '#76DAE5', '#4E9B8F', '#247BA0', '#50514F'];
+// Placeholder for custom color
+const CUSTOM_COLOR: string = 'custom';
 
 export default function Dashboard() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -53,6 +49,9 @@ export default function Dashboard() {
     const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
     const [editedCategoryName, setEditedCategoryName] = useState("");
     const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+    const [customColor, setCustomColor] = useState<string>('#000000');
+    const [showColorInput, setShowColorInput] = useState<boolean>(false);
+    const [hexInput, setHexInput] = useState<string>('#000000');
     const [isReordering, setIsReordering] = useState(false);
     const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
     const scrollViewRef = useRef<ScrollView>(null);
@@ -126,7 +125,17 @@ export default function Dashboard() {
         if (isReordering) return;
         setCategoryToEdit(category);
         setEditedCategoryName(category.title);
-        setSelectedColor(category.color);
+        
+        // Check if the category color is in our predefined colors
+        if (colorOptions.includes(category.color)) {
+            setSelectedColor(category.color);
+        } else {
+            // If not, it's a custom color
+            setSelectedColor(CUSTOM_COLOR);
+            setCustomColor(category.color);
+            setHexInput(category.color);
+        }
+        
         setEditModalVisible(true);
     };
 
@@ -134,6 +143,7 @@ export default function Dashboard() {
         setEditModalVisible(false);
         setCategoryToEdit(null);
         setEditedCategoryName("");
+        setShowColorInput(false);
     };
 
     const saveEditedCategory = async () => {
@@ -148,7 +158,7 @@ export default function Dashboard() {
                         return {
                             ...cat,
                             title: editedCategoryName.trim(),
-                            color: selectedColor,
+                            color: selectedColor === CUSTOM_COLOR ? customColor : selectedColor,
                         };
                     }
                     return cat;
@@ -162,6 +172,7 @@ export default function Dashboard() {
                 setEditModalVisible(false);
                 setCategoryToEdit(null);
                 setEditedCategoryName("");
+                setShowColorInput(false);
             }
         } catch (error) {
             console.error("Error updating category:", error);
@@ -243,10 +254,31 @@ export default function Dashboard() {
         setActiveItemIndex(index);
     };
 
+    const handleColorSelect = (color: string): void => {
+        if (color === CUSTOM_COLOR) {
+            setSelectedColor(CUSTOM_COLOR);
+            setShowColorInput(true);
+        } else {
+            setSelectedColor(color);
+            setShowColorInput(false);
+        }
+    };
+
+    const confirmCustomColor = (): void => {
+        // Validate hex code format
+        const hexRegex = /^#([0-9A-F]{6})$/i;
+        if (hexRegex.test(hexInput)) {
+            setCustomColor(hexInput);
+            setShowColorInput(false);
+        } else {
+            setCustomColor('#218690');
+        }
+    };
+
     const CategoryItem = useCallback(
         ({ item, index }: { item: Category; index: number }) => {
             const y = useSharedValue(0);
-            const itemHeight = 160; // Approximate height of item + margin
+            const itemHeight = 160;
             
             const panGesture = useAnimatedGestureHandler({
                 onStart: (_, ctx: any) => {
@@ -539,7 +571,7 @@ export default function Dashboard() {
                                     style={[
                                         globalStyles.text,
                                         styles.label,
-                                        { marginBottom: 0 },
+                                        { marginBottom: 5 },
                                     ]}
                                 >
                                     Category Color
@@ -554,9 +586,53 @@ export default function Dashboard() {
                                                 selectedColor === color &&
                                                     styles.selectedColorOption,
                                             ]}
-                                            onPress={() => setSelectedColor(color)}
+                                            onPress={() => handleColorSelect(color)}
                                         />
                                     ))}
+                                </View>
+
+                                <View style={styles.customColorContainer}>
+                                    <Text style={[globalStyles.text, { fontSize: 16, marginTop: 15, marginBottom: 5 }]}>
+                                        Or choose custom color
+                                    </Text>
+                                    <View style={styles.customColorRow}>
+                                        <Pressable
+                                            style={[
+                                                styles.customColorOption,
+                                                { 
+                                                    backgroundColor: customColor,
+                                                    borderWidth: 1,
+                                                    borderColor: '#FFF'
+                                                },
+                                                selectedColor === CUSTOM_COLOR && styles.selectedColorOption,
+                                            ]}
+                                            onPress={() => handleColorSelect(CUSTOM_COLOR)}
+                                        >
+                                            <Text style={styles.customColorText}>+</Text>
+                                        </Pressable>
+                                        
+                                        {showColorInput && (
+                                            <View style={styles.hexInputContainer}>
+                                                <TextInput
+                                                    style={styles.hexInput}
+                                                    value={hexInput}
+                                                    onChangeText={setHexInput}
+                                                    placeholder="#RRGGBB"
+                                                    placeholderTextColor="#999"
+                                                    autoCapitalize="characters"
+                                                    maxLength={7}
+                                                />
+                                                <View style={styles.confirmColorButtonContainer}>
+                                                    <Pressable 
+                                                        style={styles.confirmColorButton}
+                                                        onPress={confirmCustomColor}
+                                                    >
+                                                        <Text style={[globalStyles.text, styles.applyButton, { color: '#fff' }]}>Apply</Text>
+                                                    </Pressable>
+                                                </View>
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
 
                                 <View style={styles.modalButtonsContainer}>
@@ -580,7 +656,7 @@ export default function Dashboard() {
                                         style={[
                                             styles.modalButton,
                                             styles.modalSaveButton,
-                                            { backgroundColor: selectedColor },
+                                            { backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : selectedColor },
                                         ]}
                                         onPress={saveEditedCategory}
                                     >
@@ -737,6 +813,7 @@ const styles = StyleSheet.create({
     modalButtonsContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
+        marginTop: 20,
     },
     modalButton: {
         flex: 1,
@@ -807,5 +884,54 @@ const styles = StyleSheet.create({
     instructionsText: {
         color: "#76DAE5",
         fontSize: 14,
+    },
+    customColorContainer: {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        marginTop: 5,
+        width: '100%',
+    },
+    customColorRow: {
+        flexDirection: 'row',
+        alignItems: 'flex-start',
+        width: '100%',
+    },
+    customColorText: {
+        color: '#000',
+        fontSize: 20,
+        fontWeight: 'bold',
+    },
+    customColorOption: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        margin: 5,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    hexInputContainer: {
+        flexDirection: 'column',
+        marginLeft: 10,
+        flex: 1,
+    },
+    hexInput: {
+        backgroundColor: '#fff',
+        padding: 8,
+        borderRadius: 5,
+        width: '100%',
+        marginBottom: 8,
+        color: '#000',
+    },
+    confirmColorButtonContainer: {
+        width: '100%',
+    },
+    confirmColorButton: {
+        backgroundColor: '#218690',
+        padding: 8,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    applyButton: {
+        margin: 0,
     },
 });

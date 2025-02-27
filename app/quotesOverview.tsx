@@ -118,7 +118,7 @@ export default function QuotesOverview() {
             // Share the image with enhanced message
             await Share.share({
                 url: uri,
-                message: `"${quote.text}" — ${quote.author}\n\nShared from Kwoatle`,
+                message: `"${quote.text}" \n— ${quote.author}\n\nShared from Kwoatle`,
                 title: "Share Inspiring Quote"
             });
             
