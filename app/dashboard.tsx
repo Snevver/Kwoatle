@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
     View,
     Text,
@@ -15,6 +15,15 @@ import { useFocusEffect } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import globalStyles from "../styles/globalStyles";
 import ConfirmationDialog from "../components/confirmationDialog";
+import { Feather } from "@expo/vector-icons";
+import Animated, {
+    useAnimatedStyle,
+    useAnimatedGestureHandler,
+    useSharedValue,
+    withTiming,
+    runOnJS,
+} from "react-native-reanimated";;
+import { PanGestureHandler, LongPressGestureHandler, State, GestureHandlerRootView } from "react-native-gesture-handler";
 
 // define the types in the category object
 type Category = {
@@ -22,6 +31,7 @@ type Category = {
     title: string;
     color: string;
     amountOfQuotes: number;
+    order?: number;
 };
 
 const colorOptions = [
@@ -43,13 +53,32 @@ export default function Dashboard() {
     const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
     const [editedCategoryName, setEditedCategoryName] = useState("");
     const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+    const [isReordering, setIsReordering] = useState(false);
+    const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
     const router = useRouter();
 
     const loadCategories = async () => {
         try {
             const storedCategories = await AsyncStorage.getItem("categories");
             if (storedCategories) {
-                setCategories(JSON.parse(storedCategories));
+                let parsedCategories = JSON.parse(storedCategories);
+                
+                // If categories don't have order property, add it
+                if (parsedCategories.length > 0 && parsedCategories[0].order === undefined) {
+                    parsedCategories = parsedCategories.map((cat: Category, index: number) => ({
+                        ...cat,
+                        order: index
+                    }));
+                    await AsyncStorage.setItem("categories", JSON.stringify(parsedCategories));
+                }
+                
+                // Sort categories by order
+                parsedCategories.sort((a: Category, b: Category) => 
+                    (a.order !== undefined && b.order !== undefined) ? a.order - b.order : 0
+                );
+                
+                setCategories(parsedCategories);
             } else {
                 setCategories([]);
             }
@@ -75,6 +104,7 @@ export default function Dashboard() {
     };
 
     const goToQuotesOverview = (categoryId: number) => {
+        if (isReordering) return;
         router.push({
             pathname: "/quotesOverview",
             params: { categoryId },
@@ -82,6 +112,7 @@ export default function Dashboard() {
     };
 
     const confirmDeleteCategory = (categoryId: number) => {
+        if (isReordering) return;
         setCategoryToDelete(categoryId);
         setDeleteDialogVisible(true);
     };
@@ -92,6 +123,7 @@ export default function Dashboard() {
     };
 
     const openEditModal = (category: Category) => {
+        if (isReordering) return;
         setCategoryToEdit(category);
         setEditedCategoryName(category.title);
         setSelectedColor(category.color);
@@ -151,9 +183,16 @@ export default function Dashboard() {
                 const updatedCategories = categories.filter(
                     (cat: Category) => cat.id !== categoryId
                 );
+                
+                // Update order values after deletion
+                const reorderedCategories = updatedCategories.map((cat: Category, index: number) => ({
+                    ...cat,
+                    order: index
+                }));
+                
                 await AsyncStorage.setItem(
                     "categories",
-                    JSON.stringify(updatedCategories)
+                    JSON.stringify(reorderedCategories)
                 );
 
                 // Also delete all quotes associated with this category
@@ -176,251 +215,390 @@ export default function Dashboard() {
         }
     };
 
+    const saveNewOrder = async () => {
+        try {
+            const updatedCategories = categories.map((cat, index) => ({
+                ...cat,
+                order: index
+            }));
+            
+            await AsyncStorage.setItem("categories", JSON.stringify(updatedCategories));
+            setIsReordering(false);
+        } catch (error) {
+            console.error("Error saving new order:", error);
+        }
+    };
+
+    const moveCategory = (fromIndex: number, toIndex: number) => {
+        if (fromIndex === toIndex) return;
+        
+        const newCategories = [...categories];
+        const [movedItem] = newCategories.splice(fromIndex, 1);
+        newCategories.splice(toIndex, 0, movedItem);
+        setCategories(newCategories);
+    };
+
+    const onLongPress = (index: number) => {
+        setIsReordering(true);
+        setActiveItemIndex(index);
+    };
+
+    const CategoryItem = useCallback(
+        ({ item, index }: { item: Category; index: number }) => {
+            const y = useSharedValue(0);
+            const itemHeight = 160; // Approximate height of item + margin
+            
+            const panGesture = useAnimatedGestureHandler({
+                onStart: (_, ctx: any) => {
+                    ctx.startY = y.value;
+                    runOnJS(setActiveItemIndex)(index);
+                },
+                onActive: (event, ctx: any) => {
+                    y.value = ctx.startY + event.translationY;
+                    
+                    // Calculate possible new index
+                    const newIndex = Math.max(
+                        0,
+                        Math.min(
+                            Math.round((ctx.startY + event.translationY) / itemHeight) + index,
+                            categories.length - 1
+                        )
+                    );
+                    
+                    if (newIndex !== index && newIndex >= 0 && newIndex < categories.length) {
+                        runOnJS(moveCategory)(index, newIndex);
+                        runOnJS(setActiveItemIndex)(newIndex);
+                    }
+                },
+                onEnd: () => {
+                    y.value = withTiming(0);
+                },
+            });
+            
+            const animatedStyle = useAnimatedStyle(() => {
+                return {
+                    transform: [{ translateY: y.value }],
+                    zIndex: activeItemIndex === index ? 1 : 0,
+                };
+            });
+
+            const onHandlerStateChange = (event: any) => {
+                if (event.nativeEvent.state === State.ACTIVE) {
+                    onLongPress(index);
+                }
+            };
+            
+            if (isReordering) {
+                return (
+                    <PanGestureHandler onGestureEvent={panGesture}>
+                        <Animated.View style={[animatedStyle]}>
+                            <View
+                                style={[
+                                    styles.categoryBox,
+                                    { backgroundColor: item.color },
+                                    activeItemIndex === index && styles.activeReorderItem,
+                                    isReordering && styles.reorderingItem
+                                ]}
+                            >
+                                <View style={styles.categoryContent}>
+                                    <Text
+                                        style={[
+                                            globalStyles.text,
+                                            { fontSize: 30 },
+                                        ]}
+                                    >
+                                        {item.title}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            globalStyles.text,
+                                            styles.quoteCountText,
+                                        ]}
+                                    >
+                                        {item.amountOfQuotes}{" "}
+                                        {item.amountOfQuotes === 1
+                                            ? "quote"
+                                            : "quotes"}
+                                    </Text>
+                                </View>
+                                <View style={styles.reorderIndicatorContainer}>
+                                    <Feather name="menu" size={24} color="#fff" />
+                                </View>
+                            </View>
+                        </Animated.View>
+                    </PanGestureHandler>
+                );
+            }
+
+            return (
+                <LongPressGestureHandler
+                    onHandlerStateChange={onHandlerStateChange}
+                    minDurationMs={500}
+                >
+                    <View>
+                        <Pressable
+                            onPress={() => goToQuotesOverview(item.id)}
+                        >
+                            <View
+                                style={[
+                                    styles.categoryBox,
+                                    { backgroundColor: item.color },
+                                ]}
+                            >
+                                <View style={styles.categoryContent}>
+                                    <Text
+                                        style={[
+                                            globalStyles.text,
+                                            { fontSize: 30 },
+                                        ]}
+                                    >
+                                        {item.title}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            globalStyles.text,
+                                            styles.quoteCountText,
+                                        ]}
+                                    >
+                                        {item.amountOfQuotes}{" "}
+                                        {item.amountOfQuotes === 1
+                                            ? "quote"
+                                            : "quotes"}
+                                    </Text>
+                                </View>
+
+                                <View style={styles.buttonContainer}>
+                                    {/* Edit button */}
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            openEditModal(item);
+                                        }}
+                                        style={[
+                                            styles.actionButton,
+                                            styles.editButton,
+                                        ]}
+                                    >
+                                        <Feather name="edit-2" size={14} color="#fff" style={{marginRight: 5}} />
+                                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                                            Edit
+                                        </Text>
+
+                                    </Pressable>
+
+                                    {/* Delete button */}
+                                    <Pressable
+                                        onPress={(e) => {
+                                            e.stopPropagation();
+                                            confirmDeleteCategory(
+                                                item.id
+                                            );
+                                        }}
+                                        style={[
+                                            styles.actionButton,
+                                            styles.deleteButton,
+                                        ]}
+                                    >
+                                        <Feather name="trash-2" size={14} color="#fff" style={{marginRight: 5}} />
+                                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                                            Delete
+                                        </Text>
+                                    </Pressable>
+                                </View>
+                            </View>
+                        </Pressable>
+                    </View>
+                </LongPressGestureHandler>
+            );
+        },
+        [isReordering, categories, activeItemIndex]
+    );
+
     return (
         <>
             <StatusBar hidden={true} />
-            <View style={styles.mainContainer}>
-                {/* Background image */}
-                <View style={styles.backgroundContainer}>
-                    <Image
-                        source={require("../assets/images/background.png")}
-                        style={styles.image}
-                        resizeMode="cover"
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                <View style={styles.mainContainer}>
+                    {/* Background image */}
+                    <View style={styles.backgroundContainer}>
+                        <Image
+                            source={require("../assets/images/background.png")}
+                            style={styles.image}
+                            resizeMode="cover"
+                        />
+                    </View>
+
+                    {/* Header */}
+                    <View style={styles.headerContainer}>
+                        <Text
+                            style={[
+                                globalStyles.text,
+                                { fontSize: 40, marginTop: -25 },
+                            ]}
+                        >
+                            Kwoatle
+                        </Text>
+                        <Text
+                            style={[
+                                globalStyles.text,
+                                { fontSize: 25, color: '#cfcfcf' },
+                            ]}
+                        >
+                            Categories
+                        </Text>
+                    </View>
+
+                    {/* Scrollable list of categories */}
+                    <View style={styles.scrollableContainer}>
+                        <ScrollView
+                            ref={scrollViewRef}
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 20 }}
+                            scrollEnabled={!isReordering}
+                        >
+                            {categories.length > 0 ? (
+                                categories.map((category, index) => (
+                                    <CategoryItem key={category.id} item={category} index={index} />
+                                ))
+                            ) : (
+                                <Text style={[globalStyles.text, styles.emptyText]}>
+                                    No categories yet. Add your first category!
+                                </Text>
+                            )}
+                        </ScrollView>
+                    </View>
+
+                    {/* Category add button or Done button when reordering */}
+                    <Pressable 
+                        style={[
+                            styles.addButton, 
+                            isReordering && styles.doneButton
+                        ]} 
+                        onPress={isReordering ? saveNewOrder : goToAddCategory}
+                    >
+                        <Text
+                            style={[
+                                globalStyles.text,
+                                isReordering 
+                                    ? { fontSize: 24 } 
+                                    : { fontSize: 50, marginBottom: 11 },
+                            ]}
+                        >
+                            {isReordering ? "Done" : "+"}
+                        </Text>
+                    </Pressable>
+
+                    {/* Confirmation Dialog */}
+                    <ConfirmationDialog
+                        visible={deleteDialogVisible}
+                        title="Delete Category"
+                        message="Are you sure you want to delete this category? All quotes in this category will also be deleted. This action cannot be undone."
+                        confirmText="Delete"
+                        cancelText="Cancel"
+                        onConfirm={deleteCategory}
+                        onCancel={cancelDelete}
+                        color="#AA5555"
                     />
-                </View>
 
-                {/* Header */}
-                <View style={styles.headerContainer}>
-                    <Text
-                        style={[
-                            globalStyles.text,
-                            { fontSize: 40, marginTop: -25 },
-                        ]}
+                    {/* Edit Category Modal */}
+                    <Modal
+                        visible={editModalVisible}
+                        transparent={true}
+                        animationType="fade"
+                        onRequestClose={cancelEdit}
                     >
-                        Kwoatle
-                    </Text>
-                </View>
-
-                {/* Scrollable list of categories */}
-                <View style={styles.scrollableContainer}>
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        contentContainerStyle={{ paddingBottom: 20 }}
-                    >
-                        {categories.length > 0 ? (
-                            categories.map((category) => (
-                                <Pressable
-                                    key={category.id}
-                                    onPress={() =>
-                                        goToQuotesOverview(category.id)
-                                    }
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.modalContent}>
+                                <Text
+                                    style={[
+                                        globalStyles.text,
+                                        { fontSize: 30, marginBottom: 20 },
+                                    ]}
                                 >
-                                    <View
-                                        style={[
-                                            styles.categoryBox,
-                                            { backgroundColor: category.color },
-                                        ]}
-                                    >
-                                        <View style={styles.categoryContent}>
-                                            <Text
-                                                style={[
-                                                    globalStyles.text,
-                                                    { fontSize: 30 },
-                                                ]}
-                                            >
-                                                {category.title}
-                                            </Text>
-                                            <Text
-                                                style={[
-                                                    globalStyles.text,
-                                                    styles.quoteCountText,
-                                                ]}
-                                            >
-                                                {category.amountOfQuotes}{" "}
-                                                {category.amountOfQuotes === 1
-                                                    ? "quote"
-                                                    : "quotes"}
-                                            </Text>
-                                        </View>
+                                    Edit Category
+                                </Text>
 
-                                        <View style={styles.buttonContainer}>
-                                            {/* Edit button */}
-                                            <Pressable
-                                                onPress={(e) => {
-                                                    e.stopPropagation();
-                                                    openEditModal(category);
-                                                }}
-                                                style={[
-                                                    styles.actionButton,
-                                                    styles.editButton,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        globalStyles.text,
-                                                        { fontSize: 20 },
-                                                    ]}
-                                                >
-                                                    Edit
-                                                </Text>
-                                            </Pressable>
+                                <Text
+                                    style={[globalStyles.text, styles.modalLabel]}
+                                >
+                                    Category Name
+                                </Text>
+                                <TextInput
+                                    style={[
+                                        globalStyles.text,
+                                        styles.modalInput,
+                                        { color: "#000" },
+                                    ]}
+                                    value={editedCategoryName}
+                                    onChangeText={setEditedCategoryName}
+                                    placeholder="Enter category name"
+                                    placeholderTextColor="#999"
+                                />
 
-                                            {/* Delete button */}
-                                            <Pressable
-                                                onPress={(e) => {
-                                                    e.stopPropagation();
-                                                    confirmDeleteCategory(
-                                                        category.id
-                                                    );
-                                                }}
-                                                style={[
-                                                    styles.actionButton,
-                                                    styles.deleteButton,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        globalStyles.text,
-                                                        { fontSize: 20 },
-                                                    ]}
-                                                >
-                                                    Delete
-                                                </Text>
-                                            </Pressable>
-                                        </View>
-                                    </View>
-                                </Pressable>
-                            ))
-                        ) : (
-                            <Text style={[globalStyles.text, styles.emptyText]}>
-                                No categories yet. Add your first category!
-                            </Text>
-                        )}
-                    </ScrollView>
-                </View>
+                                <Text
+                                    style={[
+                                        globalStyles.text,
+                                        styles.label,
+                                        { marginBottom: 0 },
+                                    ]}
+                                >
+                                    Category Color
+                                </Text>
+                                <View style={styles.colorPicker}>
+                                    {colorOptions.map((color) => (
+                                        <Pressable
+                                            key={color}
+                                            style={[
+                                                styles.colorOption,
+                                                { backgroundColor: color },
+                                                selectedColor === color &&
+                                                    styles.selectedColorOption,
+                                            ]}
+                                            onPress={() => setSelectedColor(color)}
+                                        />
+                                    ))}
+                                </View>
 
-                {/* Category add button */}
-                <Pressable style={styles.addButton} onPress={goToAddCategory}>
-                    <Text
-                        style={[
-                            globalStyles.text,
-                            { fontSize: 50, marginBottom: 11 },
-                        ]}
-                    >
-                        +
-                    </Text>
-                </Pressable>
-
-                {/* Confirmation Dialog */}
-                <ConfirmationDialog
-                    visible={deleteDialogVisible}
-                    title="Delete Category"
-                    message="Are you sure you want to delete this category? All quotes in this category will also be deleted. This action cannot be undone."
-                    confirmText="Delete"
-                    cancelText="Cancel"
-                    onConfirm={deleteCategory}
-                    onCancel={cancelDelete}
-                    color="#AA5555"
-                />
-
-                {/* Edit Category Modal */}
-                <Modal
-                    visible={editModalVisible}
-                    transparent={true}
-                    animationType="fade"
-                    onRequestClose={cancelEdit}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalContent}>
-                            <Text
-                                style={[
-                                    globalStyles.text,
-                                    { fontSize: 30, marginBottom: 20 },
-                                ]}
-                            >
-                                Edit Category
-                            </Text>
-
-                            <Text
-                                style={[globalStyles.text, styles.modalLabel]}
-                            >
-                                Category Name
-                            </Text>
-                            <TextInput
-                                style={[
-                                    globalStyles.text,
-                                    styles.modalInput,
-                                    { color: "#000" },
-                                ]}
-                                value={editedCategoryName}
-                                onChangeText={setEditedCategoryName}
-                                placeholder="Enter category name"
-                                placeholderTextColor="#999"
-                            />
-
-                            <Text
-                                style={[
-                                    globalStyles.text,
-                                    styles.label,
-                                    { marginBottom: 0 },
-                                ]}
-                            >
-                                Category Color
-                            </Text>
-                            <View style={styles.colorPicker}>
-                                {colorOptions.map((color) => (
+                                <View style={styles.modalButtonsContainer}>
                                     <Pressable
-                                        key={color}
                                         style={[
-                                            styles.colorOption,
-                                            { backgroundColor: color },
-                                            selectedColor === color &&
-                                                styles.selectedColorOption,
+                                            styles.modalButton,
+                                            styles.modalCancelButton,
                                         ]}
-                                        onPress={() => setSelectedColor(color)}
-                                    />
-                                ))}
-                            </View>
-
-                            <View style={styles.modalButtonsContainer}>
-                                <Pressable
-                                    style={[
-                                        styles.modalButton,
-                                        styles.modalCancelButton,
-                                    ]}
-                                    onPress={cancelEdit}
-                                >
-                                    <Text
-                                        style={[
-                                            globalStyles.text,
-                                            { fontSize: 20 },
-                                        ]}
+                                        onPress={cancelEdit}
                                     >
-                                        Cancel
-                                    </Text>
-                                </Pressable>
-                                <Pressable
-                                    style={[
-                                        styles.modalButton,
-                                        styles.modalSaveButton,
-                                        { backgroundColor: selectedColor },
-                                    ]}
-                                    onPress={saveEditedCategory}
-                                >
-                                    <Text
+                                        <Text
+                                            style={[
+                                                globalStyles.text,
+                                                { fontSize: 20 },
+                                            ]}
+                                        >
+                                            Cancel
+                                        </Text>
+                                    </Pressable>
+                                    <Pressable
                                         style={[
-                                            globalStyles.text,
-                                            { fontSize: 20 },
+                                            styles.modalButton,
+                                            styles.modalSaveButton,
+                                            { backgroundColor: selectedColor },
                                         ]}
+                                        onPress={saveEditedCategory}
                                     >
-                                        Save
-                                    </Text>
-                                </Pressable>
+                                        <Text
+                                            style={[
+                                                globalStyles.text,
+                                                { fontSize: 20 },
+                                            ]}
+                                        >
+                                            Save
+                                        </Text>
+                                    </Pressable>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                </Modal>
-            </View>
+                    </Modal>
+                </View>
+            </GestureHandlerRootView>
         </>
     );
 }
@@ -448,7 +626,7 @@ const styles = StyleSheet.create({
     },
     scrollableContainer: {
         position: "absolute",
-        top: 100,
+        top: 130,
         left: 0,
         right: 0,
         bottom: 140,
@@ -481,11 +659,13 @@ const styles = StyleSheet.create({
         marginTop: 10,
     },
     actionButton: {
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        borderRadius: 5,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
         marginRight: 10,
-        alignSelf: "flex-start",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center"
     },
     editButton: {
         backgroundColor: "#2186D0",
@@ -496,6 +676,7 @@ const styles = StyleSheet.create({
     actionButtonText: {
         color: "#fff",
         fontSize: 14,
+        fontWeight: "600",
     },
     emptyText: {
         color: "white",
@@ -513,6 +694,9 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         borderRadius: 10,
+    },
+    doneButton: {
+        backgroundColor: "#218690",
     },
     modalOverlay: {
         flex: 1,
@@ -596,5 +780,32 @@ const styles = StyleSheet.create({
     categoryContent: {
         flex: 1,
         marginBottom: 10,
+    },
+    reorderingItem: {
+        opacity: 0.9,
+    },
+    activeReorderItem: {
+        borderWidth: 2,
+        borderColor: "#fff",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.5,
+        shadowRadius: 6,
+        elevation: 8,
+    },
+    reorderIndicatorContainer: {
+        alignItems: "flex-end",
+        marginTop: 10,
+    },
+    instructionsContainer: {
+        position: "absolute",
+        top: 110,
+        left: 0,
+        right: 0,
+        alignItems: "center",
+    },
+    instructionsText: {
+        color: "#76DAE5",
+        fontSize: 14,
     },
 });

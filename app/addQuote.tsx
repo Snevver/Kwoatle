@@ -102,23 +102,25 @@ export default function AddQuote() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Pressable
-                    onPress={() => router.back()}
-                    style={styles.backButton}
-                >
-                    <Text
-                        style={[
-                            styles.backButtonText,
-                            { fontSize: 35, marginBottom: 12 },
-                        ]}
-                    >
+                <Pressable onPress={() => router.back()} style={styles.backButton}>
+                    <Text style={[styles.backButtonText, { fontSize: 35, marginBottom: 12 }]}>
                         ←
                     </Text>
                 </Pressable>
-                <Text style={[globalStyles.text, { fontSize: 30 }]}>
-                    Add quote to {category?.title || "Category"}
-                </Text>
+                <View style={{ flexShrink: 1, maxWidth: "80%" }}>
+                    <Text
+                        style={[
+                            globalStyles.text,
+                            { fontSize: 30, flexWrap: "wrap", textAlign: "center" },
+                        ]}
+                        numberOfLines={3}
+                        ellipsizeMode="tail"
+                    >
+                        Add quote to {category?.title || "Category"}
+                    </Text>
+                </View>
             </View>
+
 
             <View style={styles.form}>
                 <Text style={[globalStyles.text, styles.label]}>

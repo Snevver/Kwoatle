@@ -382,7 +382,6 @@ export default function QuotesOverview() {
                     />
                 </View>
 
-                {/* Header */}
                 <View style={styles.header}>
                     <Pressable onPress={goBack} style={styles.backButton}>
                         <Text
@@ -394,10 +393,20 @@ export default function QuotesOverview() {
                             ←
                         </Text>
                     </Pressable>
-                    <Text style={[globalStyles.text, { fontSize: 40 }]}>
-                        {category?.title || "Quotes"}
-                    </Text>
+                    <View style={{ flexShrink: 1, maxWidth: "80%" }}>
+                        <Text
+                            style={[
+                                globalStyles.text,
+                                { fontSize: 40, flexWrap: "wrap", textAlign: "center" },
+                            ]}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                        >
+                            {category?.title || "Quotes"}
+                        </Text>
+                    </View>
                 </View>
+
 
                 {/* Content area */}
                 <View style={styles.scrollableContainer}>
