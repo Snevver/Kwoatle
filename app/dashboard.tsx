@@ -9,6 +9,7 @@ import {
     StyleSheet,
     TextInput,
     Modal,
+    Button,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
@@ -22,8 +23,13 @@ import Animated, {
     useSharedValue,
     withTiming,
     runOnJS,
-} from "react-native-reanimated";;
-import { PanGestureHandler, LongPressGestureHandler, State, GestureHandlerRootView } from "react-native-gesture-handler";
+} from "react-native-reanimated";
+import {
+    PanGestureHandler,
+    LongPressGestureHandler,
+    State,
+    GestureHandlerRootView,
+} from "react-native-gesture-handler";
 
 // define the types in the category object
 type Category = {
@@ -35,9 +41,15 @@ type Category = {
 };
 
 // Array of color options
-const colorOptions: string[] = ['#218690', '#76DAE5', '#4E9B8F', '#247BA0', '#50514F'];
+const colorOptions: string[] = [
+    "#218690",
+    "#76DAE5",
+    "#4E9B8F",
+    "#247BA0",
+    "#50514F",
+];
 // Placeholder for custom color
-const CUSTOM_COLOR: string = 'custom';
+const CUSTOM_COLOR: string = "custom";
 
 export default function Dashboard() {
     const [categories, setCategories] = useState<Category[]>([]);
@@ -49,9 +61,9 @@ export default function Dashboard() {
     const [categoryToEdit, setCategoryToEdit] = useState<Category | null>(null);
     const [editedCategoryName, setEditedCategoryName] = useState("");
     const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
-    const [customColor, setCustomColor] = useState<string>('#000000');
+    const [customColor, setCustomColor] = useState<string>("#000000");
     const [showColorInput, setShowColorInput] = useState<boolean>(false);
-    const [hexInput, setHexInput] = useState<string>('#000000');
+    const [hexInput, setHexInput] = useState<string>("#000000");
     const [isReordering, setIsReordering] = useState(false);
     const [activeItemIndex, setActiveItemIndex] = useState<number | null>(null);
     const scrollViewRef = useRef<ScrollView>(null);
@@ -62,21 +74,31 @@ export default function Dashboard() {
             const storedCategories = await AsyncStorage.getItem("categories");
             if (storedCategories) {
                 let parsedCategories = JSON.parse(storedCategories);
-                
+
                 // If categories don't have order property, add it
-                if (parsedCategories.length > 0 && parsedCategories[0].order === undefined) {
-                    parsedCategories = parsedCategories.map((cat: Category, index: number) => ({
-                        ...cat,
-                        order: index
-                    }));
-                    await AsyncStorage.setItem("categories", JSON.stringify(parsedCategories));
+                if (
+                    parsedCategories.length > 0 &&
+                    parsedCategories[0].order === undefined
+                ) {
+                    parsedCategories = parsedCategories.map(
+                        (cat: Category, index: number) => ({
+                            ...cat,
+                            order: index,
+                        })
+                    );
+                    await AsyncStorage.setItem(
+                        "categories",
+                        JSON.stringify(parsedCategories)
+                    );
                 }
-                
+
                 // Sort categories by order
-                parsedCategories.sort((a: Category, b: Category) => 
-                    (a.order !== undefined && b.order !== undefined) ? a.order - b.order : 0
+                parsedCategories.sort((a: Category, b: Category) =>
+                    a.order !== undefined && b.order !== undefined
+                        ? a.order - b.order
+                        : 0
                 );
-                
+
                 setCategories(parsedCategories);
             } else {
                 setCategories([]);
@@ -85,6 +107,41 @@ export default function Dashboard() {
             console.error("Error loading categories:", error);
             setCategories([]);
         }
+    };
+
+    const ButtonWithAnimation: React.FC<{
+        onPress: () => void;
+        style?: any;
+        children: React.ReactNode;
+    }> = ({ onPress, style, children }) => {
+        const scale = useSharedValue(1);
+
+        const handlePressIn = () => {
+            scale.value = withTiming(0.95, { duration: 100 });
+        };
+
+        const handlePressOut = () => {
+            scale.value = withTiming(1, { duration: 100 });
+        };
+
+        const animatedStyle = useAnimatedStyle(() => {
+            return {
+                transform: [{ scale: scale.value }],
+            };
+        });
+
+        return (
+            <Animated.View style={[animatedStyle]}>
+                <Pressable
+                    onPress={onPress}
+                    onPressIn={handlePressIn}
+                    onPressOut={handlePressOut}
+                    style={style}
+                >
+                    {children}
+                </Pressable>
+            </Animated.View>
+        );
     };
 
     useEffect(() => {
@@ -125,7 +182,7 @@ export default function Dashboard() {
         if (isReordering) return;
         setCategoryToEdit(category);
         setEditedCategoryName(category.title);
-        
+
         // Check if the category color is in our predefined colors
         if (colorOptions.includes(category.color)) {
             setSelectedColor(category.color);
@@ -135,7 +192,7 @@ export default function Dashboard() {
             setCustomColor(category.color);
             setHexInput(category.color);
         }
-        
+
         setEditModalVisible(true);
     };
 
@@ -158,7 +215,10 @@ export default function Dashboard() {
                         return {
                             ...cat,
                             title: editedCategoryName.trim(),
-                            color: selectedColor === CUSTOM_COLOR ? customColor : selectedColor,
+                            color:
+                                selectedColor === CUSTOM_COLOR
+                                    ? customColor
+                                    : selectedColor,
                         };
                     }
                     return cat;
@@ -194,13 +254,15 @@ export default function Dashboard() {
                 const updatedCategories = categories.filter(
                     (cat: Category) => cat.id !== categoryId
                 );
-                
+
                 // Update order values after deletion
-                const reorderedCategories = updatedCategories.map((cat: Category, index: number) => ({
-                    ...cat,
-                    order: index
-                }));
-                
+                const reorderedCategories = updatedCategories.map(
+                    (cat: Category, index: number) => ({
+                        ...cat,
+                        order: index,
+                    })
+                );
+
                 await AsyncStorage.setItem(
                     "categories",
                     JSON.stringify(reorderedCategories)
@@ -230,10 +292,13 @@ export default function Dashboard() {
         try {
             const updatedCategories = categories.map((cat, index) => ({
                 ...cat,
-                order: index
+                order: index,
             }));
-            
-            await AsyncStorage.setItem("categories", JSON.stringify(updatedCategories));
+
+            await AsyncStorage.setItem(
+                "categories",
+                JSON.stringify(updatedCategories)
+            );
             setIsReordering(false);
         } catch (error) {
             console.error("Error saving new order:", error);
@@ -242,7 +307,7 @@ export default function Dashboard() {
 
     const moveCategory = (fromIndex: number, toIndex: number) => {
         if (fromIndex === toIndex) return;
-        
+
         const newCategories = [...categories];
         const [movedItem] = newCategories.splice(fromIndex, 1);
         newCategories.splice(toIndex, 0, movedItem);
@@ -271,7 +336,7 @@ export default function Dashboard() {
             setCustomColor(hexInput);
             setShowColorInput(false);
         } else {
-            setCustomColor('#218690');
+            setCustomColor("#218690");
         }
     };
 
@@ -279,7 +344,7 @@ export default function Dashboard() {
         ({ item, index }: { item: Category; index: number }) => {
             const y = useSharedValue(0);
             const itemHeight = 160;
-            
+
             const panGesture = useAnimatedGestureHandler({
                 onStart: (_, ctx: any) => {
                     ctx.startY = y.value;
@@ -287,17 +352,23 @@ export default function Dashboard() {
                 },
                 onActive: (event, ctx: any) => {
                     y.value = ctx.startY + event.translationY;
-                    
+
                     // Calculate possible new index
                     const newIndex = Math.max(
                         0,
                         Math.min(
-                            Math.round((ctx.startY + event.translationY) / itemHeight) + index,
+                            Math.round(
+                                (ctx.startY + event.translationY) / itemHeight
+                            ) + index,
                             categories.length - 1
                         )
                     );
-                    
-                    if (newIndex !== index && newIndex >= 0 && newIndex < categories.length) {
+
+                    if (
+                        newIndex !== index &&
+                        newIndex >= 0 &&
+                        newIndex < categories.length
+                    ) {
                         runOnJS(moveCategory)(index, newIndex);
                         runOnJS(setActiveItemIndex)(newIndex);
                     }
@@ -306,7 +377,7 @@ export default function Dashboard() {
                     y.value = withTiming(0);
                 },
             });
-            
+
             const animatedStyle = useAnimatedStyle(() => {
                 return {
                     transform: [{ translateY: y.value }],
@@ -319,7 +390,7 @@ export default function Dashboard() {
                     onLongPress(index);
                 }
             };
-            
+
             if (isReordering) {
                 return (
                     <PanGestureHandler onGestureEvent={panGesture}>
@@ -328,8 +399,9 @@ export default function Dashboard() {
                                 style={[
                                     styles.categoryBox,
                                     { backgroundColor: item.color },
-                                    activeItemIndex === index && styles.activeReorderItem,
-                                    isReordering && styles.reorderingItem
+                                    activeItemIndex === index &&
+                                        styles.activeReorderItem,
+                                    isReordering && styles.reorderingItem,
                                 ]}
                             >
                                 <View style={styles.categoryContent}>
@@ -354,7 +426,11 @@ export default function Dashboard() {
                                     </Text>
                                 </View>
                                 <View style={styles.reorderIndicatorContainer}>
-                                    <Feather name="menu" size={24} color="#fff" />
+                                    <Feather
+                                        name="menu"
+                                        size={24}
+                                        color="#fff"
+                                    />
                                 </View>
                             </View>
                         </Animated.View>
@@ -368,9 +444,7 @@ export default function Dashboard() {
                     minDurationMs={500}
                 >
                     <View>
-                        <Pressable
-                            onPress={() => goToQuotesOverview(item.id)}
-                        >
+                        <Pressable onPress={() => goToQuotesOverview(item.id)}>
                             <View
                                 style={[
                                     styles.categoryBox,
@@ -401,9 +475,8 @@ export default function Dashboard() {
 
                                 <View style={styles.buttonContainer}>
                                     {/* Edit button */}
-                                    <Pressable
-                                        onPress={(e) => {
-                                            e.stopPropagation();
+                                    <ButtonWithAnimation
+                                        onPress={() => {
                                             openEditModal(item);
                                         }}
                                         style={[
@@ -411,31 +484,47 @@ export default function Dashboard() {
                                             styles.editButton,
                                         ]}
                                     >
-                                        <Feather name="edit-2" size={14} color="#fff" style={{marginRight: 5}} />
-                                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                                        <Feather
+                                            name="edit-2"
+                                            size={14}
+                                            color="#fff"
+                                            style={{ marginRight: 5 }}
+                                        />
+                                        <Text
+                                            style={[
+                                                globalStyles.text,
+                                                styles.actionButtonText,
+                                            ]}
+                                        >
                                             Edit
                                         </Text>
-
-                                    </Pressable>
+                                    </ButtonWithAnimation>
 
                                     {/* Delete button */}
-                                    <Pressable
-                                        onPress={(e) => {
-                                            e.stopPropagation();
-                                            confirmDeleteCategory(
-                                                item.id
-                                            );
+                                    <ButtonWithAnimation
+                                        onPress={() => {
+                                            confirmDeleteCategory(item.id);
                                         }}
                                         style={[
                                             styles.actionButton,
                                             styles.deleteButton,
                                         ]}
                                     >
-                                        <Feather name="trash-2" size={14} color="#fff" style={{marginRight: 5}} />
-                                        <Text style={[globalStyles.text, styles.actionButtonText]}>
+                                        <Feather
+                                            name="trash-2"
+                                            size={14}
+                                            color="#fff"
+                                            style={{ marginRight: 5 }}
+                                        />
+                                        <Text
+                                            style={[
+                                                globalStyles.text,
+                                                styles.actionButtonText,
+                                            ]}
+                                        >
                                             Delete
                                         </Text>
-                                    </Pressable>
+                                    </ButtonWithAnimation>
                                 </View>
                             </View>
                         </Pressable>
@@ -473,7 +562,7 @@ export default function Dashboard() {
                         <Text
                             style={[
                                 globalStyles.text,
-                                { fontSize: 25, color: '#cfcfcf' },
+                                { fontSize: 25, color: "#cfcfcf" },
                             ]}
                         >
                             Categories
@@ -490,10 +579,19 @@ export default function Dashboard() {
                         >
                             {categories.length > 0 ? (
                                 categories.map((category, index) => (
-                                    <CategoryItem key={category.id} item={category} index={index} />
+                                    <CategoryItem
+                                        key={category.id}
+                                        item={category}
+                                        index={index}
+                                    />
                                 ))
                             ) : (
-                                <Text style={[globalStyles.text, styles.emptyText]}>
+                                <Text
+                                    style={[
+                                        globalStyles.text,
+                                        styles.emptyText,
+                                    ]}
+                                >
                                     No categories yet. Add your first category!
                                 </Text>
                             )}
@@ -501,24 +599,24 @@ export default function Dashboard() {
                     </View>
 
                     {/* Category add button or Done button when reordering */}
-                    <Pressable 
-                        style={[
-                            styles.addButton, 
-                            isReordering && styles.doneButton
-                        ]} 
+                    <ButtonWithAnimation
                         onPress={isReordering ? saveNewOrder : goToAddCategory}
+                        style={[
+                            styles.addButton,
+                            isReordering && styles.doneButton,
+                        ]}
                     >
                         <Text
                             style={[
                                 globalStyles.text,
-                                isReordering 
-                                    ? { fontSize: 24 } 
+                                isReordering
+                                    ? { fontSize: 24 }
                                     : { fontSize: 50, marginBottom: 11 },
                             ]}
                         >
                             {isReordering ? "Done" : "+"}
                         </Text>
-                    </Pressable>
+                    </ButtonWithAnimation>
 
                     {/* Confirmation Dialog */}
                     <ConfirmationDialog
@@ -551,7 +649,10 @@ export default function Dashboard() {
                                 </Text>
 
                                 <Text
-                                    style={[globalStyles.text, styles.modalLabel]}
+                                    style={[
+                                        globalStyles.text,
+                                        styles.modalLabel,
+                                    ]}
                                 >
                                     Category Name
                                 </Text>
@@ -586,33 +687,55 @@ export default function Dashboard() {
                                                 selectedColor === color &&
                                                     styles.selectedColorOption,
                                             ]}
-                                            onPress={() => handleColorSelect(color)}
+                                            onPress={() =>
+                                                handleColorSelect(color)
+                                            }
                                         />
                                     ))}
                                 </View>
 
                                 <View style={styles.customColorContainer}>
-                                    <Text style={[globalStyles.text, { fontSize: 16, marginTop: 15, marginBottom: 5 }]}>
+                                    <Text
+                                        style={[
+                                            globalStyles.text,
+                                            {
+                                                fontSize: 16,
+                                                marginTop: 15,
+                                                marginBottom: 5,
+                                            },
+                                        ]}
+                                    >
                                         Or choose custom color
                                     </Text>
                                     <View style={styles.customColorRow}>
                                         <Pressable
                                             style={[
                                                 styles.customColorOption,
-                                                { 
-                                                    backgroundColor: customColor,
+                                                {
+                                                    backgroundColor:
+                                                        customColor,
                                                     borderWidth: 1,
-                                                    borderColor: '#FFF'
+                                                    borderColor: "#FFF",
                                                 },
-                                                selectedColor === CUSTOM_COLOR && styles.selectedColorOption,
+                                                selectedColor ===
+                                                    CUSTOM_COLOR &&
+                                                    styles.selectedColorOption,
                                             ]}
-                                            onPress={() => handleColorSelect(CUSTOM_COLOR)}
+                                            onPress={() =>
+                                                handleColorSelect(CUSTOM_COLOR)
+                                            }
                                         >
-                                            <Text style={styles.customColorText}>+</Text>
+                                            <Text
+                                                style={styles.customColorText}
+                                            >
+                                                +
+                                            </Text>
                                         </Pressable>
-                                        
+
                                         {showColorInput && (
-                                            <View style={styles.hexInputContainer}>
+                                            <View
+                                                style={styles.hexInputContainer}
+                                            >
                                                 <TextInput
                                                     style={styles.hexInput}
                                                     value={hexInput}
@@ -622,21 +745,38 @@ export default function Dashboard() {
                                                     autoCapitalize="characters"
                                                     maxLength={7}
                                                 />
-                                                <View style={styles.confirmColorButtonContainer}>
-                                                    <Pressable 
-                                                        style={styles.confirmColorButton}
-                                                        onPress={confirmCustomColor}
+                                                <View
+                                                    style={
+                                                        styles.confirmColorButtonContainer
+                                                    }
+                                                >
+                                                    <ButtonWithAnimation
+                                                        style={
+                                                            styles.confirmColorButton
+                                                        }
+                                                        onPress={
+                                                            confirmCustomColor
+                                                        }
                                                     >
-                                                        <Text style={[globalStyles.text, styles.applyButton, { color: '#fff' }]}>Apply</Text>
-                                                    </Pressable>
+                                                        <Text
+                                                            style={[
+                                                                globalStyles.text,
+                                                                styles.applyButton,
+                                                                {
+                                                                    color: "#fff",
+                                                                },
+                                                            ]}
+                                                        >
+                                                            Apply
+                                                        </Text>
+                                                    </ButtonWithAnimation>
                                                 </View>
                                             </View>
                                         )}
                                     </View>
                                 </View>
-
                                 <View style={styles.modalButtonsContainer}>
-                                    <Pressable
+                                    <ButtonWithAnimation
                                         style={[
                                             styles.modalButton,
                                             styles.modalCancelButton,
@@ -651,12 +791,18 @@ export default function Dashboard() {
                                         >
                                             Cancel
                                         </Text>
-                                    </Pressable>
-                                    <Pressable
+                                    </ButtonWithAnimation>
+                                    <ButtonWithAnimation
                                         style={[
                                             styles.modalButton,
                                             styles.modalSaveButton,
-                                            { backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : selectedColor },
+                                            {
+                                                backgroundColor:
+                                                    selectedColor ===
+                                                    CUSTOM_COLOR
+                                                        ? customColor
+                                                        : selectedColor,
+                                            },
                                         ]}
                                         onPress={saveEditedCategory}
                                     >
@@ -668,7 +814,7 @@ export default function Dashboard() {
                                         >
                                             Save
                                         </Text>
-                                    </Pressable>
+                                    </ButtonWithAnimation>
                                 </View>
                             </View>
                         </View>
@@ -741,7 +887,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
     editButton: {
         backgroundColor: "#2186D0",
@@ -886,50 +1032,50 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     customColorContainer: {
-        flexDirection: 'column',
-        alignItems: 'flex-start',
+        flexDirection: "column",
+        alignItems: "flex-start",
         marginTop: 5,
-        width: '100%',
+        width: "100%",
     },
     customColorRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        width: '100%',
+        flexDirection: "row",
+        alignItems: "flex-start",
+        width: "100%",
     },
     customColorText: {
-        color: '#000',
+        color: "#000",
         fontSize: 20,
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     customColorOption: {
         width: 40,
         height: 40,
         borderRadius: 20,
         margin: 5,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
     },
     hexInputContainer: {
-        flexDirection: 'column',
+        flexDirection: "column",
         marginLeft: 10,
         flex: 1,
     },
     hexInput: {
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
         padding: 8,
         borderRadius: 5,
-        width: '100%',
+        width: "100%",
         marginBottom: 8,
-        color: '#000',
+        color: "#000",
     },
     confirmColorButtonContainer: {
-        width: '100%',
+        width: "100%",
     },
     confirmColorButton: {
-        backgroundColor: '#218690',
+        backgroundColor: "#218690",
         padding: 8,
         borderRadius: 5,
-        alignItems: 'center',
+        alignItems: "center",
     },
     applyButton: {
         margin: 0,

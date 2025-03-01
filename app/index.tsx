@@ -54,7 +54,7 @@ export default function SplashScreen() {
             600,
             withTiming(0, { duration: 800 })
         );
-        
+
         buttonOpacity.value = withDelay(600, withTiming(1, { duration: 800 }));
         buttonTranslateY.value = withDelay(
             600,
@@ -80,7 +80,10 @@ export default function SplashScreen() {
     const getAnimatedButtonStyle = () => {
         return {
             opacity: buttonOpacity.value,
-            transform: [{ translateY: buttonTranslateY.value }],
+            transform: [
+                { translateY: buttonTranslateY.value },
+                { scale: buttonScale.value },
+            ],
         };
     };
 
@@ -91,6 +94,15 @@ export default function SplashScreen() {
     // Navigate to the dashboard
     const goToDashboard = () => {
         router.push("/dashboard");
+    };
+
+    // Handle button press
+    const handlePressIn = () => {
+        buttonScale.value = withTiming(0.95, { duration: 100 });
+    };
+
+    const handlePressOut = () => {
+        buttonScale.value = withTiming(1, { duration: 100 });
     };
 
     return (
@@ -127,7 +139,11 @@ export default function SplashScreen() {
                 <Animated.View
                     style={[styles.startButton, animatedButtonStyle]}
                 >
-                    <Pressable onPress={goToDashboard}>
+                    <Pressable
+                        onPress={goToDashboard}
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
+                    >
                         <Text style={[globalStyles.text, styles.buttonText]}>
                             Start
                         </Text>
