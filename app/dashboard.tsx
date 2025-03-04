@@ -31,7 +31,7 @@ import {
     GestureHandlerRootView,
 } from "react-native-gesture-handler";
 
-// define the types in the category object
+// Define the types in the category object
 type Category = {
     id: number;
     title: string;
