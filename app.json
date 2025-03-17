@@ -27,7 +27,8 @@
         {
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#ffffff",
+          "image": "./assets/images/splashscreen_logo.png"
         }
       ],
       "expo-font"
@@ -42,9 +43,6 @@
       "eas": {
         "projectId": "70a91d35-c2e5-4e8a-8c89-65601fbce330"
       }
-    },
-    "splash": {
-      "image": "./assets/images/background.png"
     }
   }
 }
