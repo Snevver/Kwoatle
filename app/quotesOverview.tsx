@@ -309,10 +309,11 @@ export default function QuotesOverview() {
                     {/* Share button with enhanced styling */}
                     <Pressable
                         onPress={() => shareQuote(item)}
-                        style={[
+                        style={({pressed}) => [
                             styles.actionButton, 
                             styles.shareButton,
-                            isSharing === item.id && styles.sharingInProgress
+                            isSharing === item.id && styles.sharingInProgress,
+                            pressed && {opacity: 0.8}
                         ]}
                         disabled={isSharing === item.id}
                         testID={`share-quote-${item.id}`}
@@ -332,7 +333,11 @@ export default function QuotesOverview() {
                     {/* Edit button */}
                     <Pressable
                         onPress={() => openEditModal(item)}
-                        style={[styles.actionButton, styles.editButton]}
+                        style={({pressed}) => [
+                            styles.actionButton, 
+                            styles.editButton,
+                            pressed && {opacity: 0.8}
+                        ]}
                         testID={`edit-quote-${item.id}`}
                     >
                         <Feather name="edit-2" size={14} color="#fff" style={{marginRight: 5}} />
@@ -344,7 +349,11 @@ export default function QuotesOverview() {
                     {/* Delete button */}
                     <Pressable
                         onPress={() => confirmDeleteQuote(item.id)}
-                        style={[styles.actionButton, styles.deleteButton]}
+                        style={({pressed}) => [
+                            styles.actionButton, 
+                            styles.deleteButton,
+                            pressed && {opacity: 0.8}
+                        ]}
                         testID={`delete-quote-${item.id}`}
                     >
                         <Feather name="trash-2" size={14} color="#fff" style={{marginRight: 5}} />
@@ -383,7 +392,13 @@ export default function QuotesOverview() {
                 </View>
 
                 <View style={styles.header}>
-                    <Pressable onPress={goBack} style={styles.backButton}>
+                    <Pressable 
+                        onPress={goBack} 
+                        style={({pressed}) => [
+                            styles.backButton,
+                            pressed && {opacity: 0.8}
+                        ]}
+                    >
                         <Text
                             style={[
                                 styles.backButtonText,
@@ -427,7 +442,12 @@ export default function QuotesOverview() {
                 </View>
 
                 {/* Add button */}
-                <Pressable style={styles.addButton} onPress={goToAddQuote}>
+                <Pressable 
+                    style={({pressed}) => [
+                        styles.addButton,
+                        pressed && {opacity: 0.8}
+                    ]} 
+                    onPress={goToAddQuote}>
                     <Text style={[globalStyles.text, { fontSize: 50 }]}>+</Text>
                 </Pressable>
 
@@ -496,9 +516,10 @@ export default function QuotesOverview() {
 
                             <View style={styles.modalButtonsContainer}>
                                 <Pressable
-                                    style={[
+                                    style={({pressed}) => [
                                         styles.modalButton,
                                         styles.modalCancelButton,
+                                        pressed && {opacity: 0.8}
                                     ]}
                                     onPress={cancelEdit}
                                 >
@@ -512,9 +533,10 @@ export default function QuotesOverview() {
                                     </Text>
                                 </Pressable>
                                 <Pressable
-                                    style={[
+                                    style={({pressed}) => [
                                         styles.modalButton,
                                         styles.modalSaveButton,
+                                        pressed && {opacity: 0.8},
                                         {
                                             backgroundColor:
                                                 category?.color || "#218690",

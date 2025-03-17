@@ -109,41 +109,6 @@ export default function Dashboard() {
         }
     };
 
-    const ButtonWithAnimation: React.FC<{
-        onPress: () => void;
-        style?: any;
-        children: React.ReactNode;
-    }> = ({ onPress, style, children }) => {
-        const scale = useSharedValue(1);
-
-        const handlePressIn = () => {
-            scale.value = withTiming(0.95, { duration: 100 });
-        };
-
-        const handlePressOut = () => {
-            scale.value = withTiming(1, { duration: 100 });
-        };
-
-        const animatedStyle = useAnimatedStyle(() => {
-            return {
-                transform: [{ scale: scale.value }],
-            };
-        });
-
-        return (
-            <Animated.View style={[animatedStyle]}>
-                <Pressable
-                    onPress={onPress}
-                    onPressIn={handlePressIn}
-                    onPressOut={handlePressOut}
-                    style={style}
-                >
-                    {children}
-                </Pressable>
-            </Animated.View>
-        );
-    };
-
     useEffect(() => {
         loadCategories();
     }, []);
@@ -444,7 +409,12 @@ export default function Dashboard() {
                     minDurationMs={500}
                 >
                     <View>
-                        <Pressable onPress={() => goToQuotesOverview(item.id)}>
+                        <Pressable
+                            onPress={() => goToQuotesOverview(item.id)}
+                            style={({pressed}) => [
+                                pressed && {opacity: 0.8}
+                            ]}
+                        >
                             <View
                                 style={[
                                     styles.categoryBox,
@@ -475,14 +445,16 @@ export default function Dashboard() {
 
                                 <View style={styles.buttonContainer}>
                                     {/* Edit button */}
-                                    <ButtonWithAnimation
+                                    <Pressable
                                         onPress={() => {
                                             openEditModal(item);
                                         }}
-                                        style={[
+                                        style={({pressed}) => [
                                             styles.actionButton,
                                             styles.editButton,
+                                            pressed && {opacity: 0.8}
                                         ]}
+                                        
                                     >
                                         <Feather
                                             name="edit-2"
@@ -498,16 +470,17 @@ export default function Dashboard() {
                                         >
                                             Edit
                                         </Text>
-                                    </ButtonWithAnimation>
+                                    </Pressable>
 
                                     {/* Delete button */}
-                                    <ButtonWithAnimation
+                                    <Pressable
                                         onPress={() => {
                                             confirmDeleteCategory(item.id);
                                         }}
-                                        style={[
+                                        style={({pressed}) => [
                                             styles.actionButton,
                                             styles.deleteButton,
+                                            pressed && {opacity: 0.8}
                                         ]}
                                     >
                                         <Feather
@@ -524,7 +497,7 @@ export default function Dashboard() {
                                         >
                                             Delete
                                         </Text>
-                                    </ButtonWithAnimation>
+                                    </Pressable>
                                 </View>
                             </View>
                         </Pressable>
@@ -599,12 +572,13 @@ export default function Dashboard() {
                     </View>
 
                     {/* Category add button or Done button when reordering */}
-                    <ButtonWithAnimation
-                        onPress={isReordering ? saveNewOrder : goToAddCategory}
-                        style={[
-                            styles.addButton,
+                    <Pressable 
+                        style={({pressed}) => [
+                            styles.addButton, 
                             isReordering && styles.doneButton,
-                        ]}
+                            pressed && {opacity: 0.8}                            
+                        ]} 
+                        onPress={isReordering ? saveNewOrder : goToAddCategory}
                     >
                         <Text
                             style={[
@@ -616,7 +590,7 @@ export default function Dashboard() {
                         >
                             {isReordering ? "Done" : "+"}
                         </Text>
-                    </ButtonWithAnimation>
+                    </Pressable>
 
                     {/* Confirmation Dialog */}
                     <ConfirmationDialog
@@ -681,11 +655,12 @@ export default function Dashboard() {
                                     {colorOptions.map((color) => (
                                         <Pressable
                                             key={color}
-                                            style={[
+                                            style={({pressed}) => [
                                                 styles.colorOption,
                                                 { backgroundColor: color },
                                                 selectedColor === color &&
-                                                    styles.selectedColorOption,
+                                                styles.selectedColorOption,
+                                                pressed && {opacity: 0.8}
                                             ]}
                                             onPress={() =>
                                                 handleColorSelect(color)
@@ -709,7 +684,7 @@ export default function Dashboard() {
                                     </Text>
                                     <View style={styles.customColorRow}>
                                         <Pressable
-                                            style={[
+                                            style={({pressed}) => [
                                                 styles.customColorOption,
                                                 {
                                                     backgroundColor:
@@ -717,9 +692,8 @@ export default function Dashboard() {
                                                     borderWidth: 1,
                                                     borderColor: "#FFF",
                                                 },
-                                                selectedColor ===
-                                                    CUSTOM_COLOR &&
-                                                    styles.selectedColorOption,
+                                                selectedColor === CUSTOM_COLOR && styles.selectedColorOption,
+                                                pressed && {opacity: 0.8}
                                             ]}
                                             onPress={() =>
                                                 handleColorSelect(CUSTOM_COLOR)
@@ -745,18 +719,13 @@ export default function Dashboard() {
                                                     autoCapitalize="characters"
                                                     maxLength={7}
                                                 />
-                                                <View
-                                                    style={
-                                                        styles.confirmColorButtonContainer
-                                                    }
-                                                >
-                                                    <ButtonWithAnimation
-                                                        style={
-                                                            styles.confirmColorButton
-                                                        }
-                                                        onPress={
-                                                            confirmCustomColor
-                                                        }
+                                                <View style={styles.confirmColorButtonContainer}>
+                                                    <Pressable 
+                                                        style={({pressed}) => [
+                                                            styles.confirmColorButton,
+                                                            pressed && {opacity: 0.8}
+                                                        ]}
+                                                        onPress={confirmCustomColor}
                                                     >
                                                         <Text
                                                             style={[
@@ -769,17 +738,18 @@ export default function Dashboard() {
                                                         >
                                                             Apply
                                                         </Text>
-                                                    </ButtonWithAnimation>
+                                                    </Pressable>
                                                 </View>
                                             </View>
                                         )}
                                     </View>
                                 </View>
                                 <View style={styles.modalButtonsContainer}>
-                                    <ButtonWithAnimation
-                                        style={[
+                                    <Pressable
+                                        style={({pressed}) => [
                                             styles.modalButton,
                                             styles.modalCancelButton,
+                                            pressed && {opacity: 0.8}
                                         ]}
                                         onPress={cancelEdit}
                                     >
@@ -791,18 +761,13 @@ export default function Dashboard() {
                                         >
                                             Cancel
                                         </Text>
-                                    </ButtonWithAnimation>
-                                    <ButtonWithAnimation
-                                        style={[
+                                    </Pressable>
+                                    <Pressable
+                                        style={({pressed}) => [
                                             styles.modalButton,
                                             styles.modalSaveButton,
-                                            {
-                                                backgroundColor:
-                                                    selectedColor ===
-                                                    CUSTOM_COLOR
-                                                        ? customColor
-                                                        : selectedColor,
-                                            },
+                                            { backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : selectedColor },
+                                            pressed && {opacity: 0.8}
                                         ]}
                                         onPress={saveEditedCategory}
                                     >
@@ -814,7 +779,7 @@ export default function Dashboard() {
                                         >
                                             Save
                                         </Text>
-                                    </ButtonWithAnimation>
+                                    </Pressable>
                                 </View>
                             </View>
                         </View>

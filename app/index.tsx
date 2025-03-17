@@ -131,24 +131,23 @@ export default function SplashScreen() {
                     style={[styles.textContainer, animatedSubtitleStyle]}
                 >
                     <Text style={[globalStyles.text, styles.subtitle]}>
-                        "Your daily dose of inspiration„
+                        "Your daily quotation tool„
                     </Text>
                 </Animated.View>
 
                 {/* Start Button */}
-                <Animated.View
-                    style={[styles.startButton, animatedButtonStyle]}
+                <Pressable 
+                    onPress={goToDashboard}
+                    style={({pressed}) => [
+                        styles.startButton,
+                        animatedButtonStyle,
+                        pressed && {opacity: 0.8}
+                    ]}
                 >
-                    <Pressable
-                        onPress={goToDashboard}
-                        onPressIn={handlePressIn}
-                        onPressOut={handlePressOut}
-                    >
-                        <Text style={[globalStyles.text, styles.buttonText]}>
-                            Start
-                        </Text>
-                    </Pressable>
-                </Animated.View>
+                    <Text style={[globalStyles.text, styles.buttonText]}>
+                        Start
+                    </Text>
+                </Pressable>
             </View>
         </>
     );

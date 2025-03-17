@@ -64,7 +64,13 @@ export default function AddCategory() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Pressable onPress={() => router.back()} style={styles.backButton}>
+        <Pressable 
+          onPress={() => router.back()} 
+          style={({pressed}) => [
+            styles.backButton,
+            pressed && {opacity: 0.8}
+          ]}
+        >
           <Text style={[styles.backButtonText, { fontSize: 35 }]}>←</Text>
         </Pressable>
         <Text style={[globalStyles.text, styles.label, { fontSize: 30 }]}>Add New Category</Text>
@@ -85,10 +91,11 @@ export default function AddCategory() {
           {colorOptions.map((color) => (
             <Pressable
               key={color}
-              style={[
+              style={({pressed}) => [
                 styles.colorOption,
                 { backgroundColor: color },
                 selectedColor === color && styles.selectedColorOption,
+                pressed && {opacity: 0.8}
               ]}
               onPress={() => handleColorSelect(color)}
             />
@@ -98,7 +105,7 @@ export default function AddCategory() {
               Or choose custom color
             </Text>
             <Pressable
-              style={[
+              style={({pressed}) => [
                 styles.customColorOption,
                 { 
                   backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : '#FFF',
@@ -106,6 +113,7 @@ export default function AddCategory() {
                   borderColor: '#FFF'
                 },
                 selectedColor === CUSTOM_COLOR && styles.selectedColorOption,
+                pressed && {opacity: 0.8}
               ]}
               onPress={() => handleColorSelect(CUSTOM_COLOR)}
             >
@@ -115,9 +123,10 @@ export default function AddCategory() {
         </View>
 
         <Pressable 
-          style={[
+          style={({pressed}) => [
             styles.saveButton, 
-            { backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : selectedColor }
+            { backgroundColor: selectedColor === CUSTOM_COLOR ? customColor : selectedColor },
+            pressed && {opacity: 0.8}
           ]} 
           onPress={saveCategory}
         >
@@ -152,13 +161,21 @@ export default function AddCategory() {
             
             <View style={styles.modalButtons}>
               <Pressable 
-                style={[styles.modalButton, styles.cancelButton]} 
+                style={({pressed}) => [
+                  styles.modalButton, 
+                  styles.cancelButton,
+                  pressed && {opacity: 0.8}
+                ]} 
                 onPress={() => setShowColorInput(false)}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </Pressable>
               <Pressable 
-                style={[styles.modalButton, styles.confirmButton]} 
+                style={({pressed}) => [
+                  styles.modalButton, 
+                  styles.confirmButton,
+                  pressed && {opacity: 0.8}
+                ]} 
                 onPress={confirmCustomColor}
               >
                 <Text style={styles.modalButtonText}>Confirm</Text>

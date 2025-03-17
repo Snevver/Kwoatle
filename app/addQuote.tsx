@@ -102,7 +102,13 @@ export default function AddQuote() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Pressable onPress={() => router.back()} style={styles.backButton}>
+                <Pressable 
+                    onPress={() => router.back()} 
+                    style={({pressed}) => [
+                        styles.backButton,
+                        pressed && {opacity: 0.8}
+                    ]}
+                >
                     <Text style={[styles.backButtonText, { fontSize: 35, marginBottom: 12 }]}>
                         ←
                     </Text>
@@ -155,9 +161,10 @@ export default function AddQuote() {
                 />
 
                 <Pressable
-                    style={[
+                    style={({pressed}) => [
                         styles.saveButton,
                         { backgroundColor: category?.color || "#218690" },
+                        pressed && {opacity: 0.8}
                     ]}
                     onPress={saveQuote}
                 >

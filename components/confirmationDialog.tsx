@@ -33,11 +33,17 @@ export default function ConfirmationDialog({
       onRequestClose={onCancel}
     >
       <Pressable 
-        style={styles.centeredView}
+        style={({pressed}) => [
+          styles.centeredView,
+          pressed && {opacity: 0.8}
+        ]}
         onPress={onCancel}
       >
         <Pressable 
-          style={styles.modalView}
+          style={({pressed}) => [
+            styles.modalView,
+            pressed && {opacity: 0.8}
+          ]}
           onPress={(e) => e.stopPropagation()}
         >
           <Text style={[globalStyles.text, styles.titleText]}>{title}</Text>
@@ -45,14 +51,24 @@ export default function ConfirmationDialog({
           
           <View style={styles.buttonContainer}>
             <Pressable
-              style={[styles.button, styles.cancelButton]}
+                style={({pressed}) => [
+                styles.button, 
+                styles.cancelButton,
+                pressed && {opacity: 0.8}
+
+              ]}
               onPress={onCancel}
             >
               <Text style={[globalStyles.text, styles.buttonText]}>{cancelText}</Text>
             </Pressable>
             
             <Pressable
-              style={[styles.button, styles.confirmButton, { backgroundColor: color }]}
+               style={({pressed}) => [
+                styles.button, 
+                styles.confirmButton, 
+                { backgroundColor: color },
+                pressed && {opacity: 0.8}
+              ]}
               onPress={onConfirm}
             >
               <Text style={[globalStyles.text, styles.buttonText]}>{confirmText}</Text>
