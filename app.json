@@ -42,6 +42,9 @@
       "eas": {
         "projectId": "70a91d35-c2e5-4e8a-8c89-65601fbce330"
       }
+    },
+    "splash": {
+      "image": "./assets/images/background.png"
     }
   }
 }
