@@ -13,7 +13,8 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.snevver.Kwoatle"
     },
     "web": {
       "bundler": "metro",
@@ -33,9 +34,14 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "70a91d35-c2e5-4e8a-8c89-65601fbce330"
+      }
     }
   }
 }
-
-
-
